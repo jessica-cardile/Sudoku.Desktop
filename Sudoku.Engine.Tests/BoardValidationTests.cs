@@ -33,5 +33,15 @@ namespace Sudoku.Engine.Tests
             //Assert
             Assert.False(isValid);
         }
+
+        [Fact]
+        public void SettingCellToInvalidValue_ShouldThrowException()
+        {
+            //Arrange
+            var board = new SudokuBoard();
+            var cell = board.GetCell(0, 0);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => cell.Value = 10);
+        }
     }
 }
