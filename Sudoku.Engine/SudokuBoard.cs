@@ -136,5 +136,17 @@ namespace Sudoku.Engine
             }
             return true;
         }
+
+        public bool IsBoardValid()
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                if (!isRowValid(i) || !isColumnValid(i) || !isBoxValid(i))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
