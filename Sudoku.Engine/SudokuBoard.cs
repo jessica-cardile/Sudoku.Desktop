@@ -148,5 +148,44 @@ namespace Sudoku.Engine
             }
             return true;
         }
+
+        public bool SolvePuzzle()
+        {
+            //Find the first empty cell available
+            Cell? nextEmptyCell = Cells.FirstOrDefault(c => c.Value == 0);
+
+            //Base case: no empty cells, board solved!
+            if (nextEmptyCell == null)
+            {
+                return true;
+            }
+
+            //empty cell found, try numbers 1 to 9
+            for (int num = 1; num <= 9; num++)
+            {
+                //find where cell is in the board
+                int boxIndex = (nextEmptyCell.Row / 3) * 3 + (nextEmptyCell.Column / 3);
+
+                //try to place number
+                nextEmptyCell.Value = num;
+
+                //check if it breaks the board rules
+                if (isRowValid(nextEmptyCell.Row) && isColumnValid(nextEmptyCell.Column) && isBoxValid(boxIndex))
+                {
+                    //recursively call again to try and solve the rest of the board
+                    bool isPuzzleSolved = SolvePuzzle();
+
+                    if (isPuzzleSolved)
+                    {
+                        return true;
+                    }
+                }
+
+                //if we got here we need to backtrack the last number was wrong
+                nextEmptyCell.Value = 0;
+            }
+            //if we got here, we tried all numbers and we need to backtrack further
+            return false;
+        }
     }
 }
