@@ -136,5 +136,152 @@ namespace Sudoku.Engine
             }
             return true;
         }
+
+        public bool IsBoardValid()
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                if (!isRowValid(i) || !isColumnValid(i) || !isBoxValid(i))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public bool SolvePuzzle(bool useRandomisation = false)
+        {
+            //Find the first empty cell available
+            Cell? nextEmptyCell = Cells.FirstOrDefault(c => c.Value == 0);
+
+            //Base case: no empty cells, board solved!
+            if (nextEmptyCell == null)
+            {
+                return true;
+            }
+
+            IEnumerable<int> numberSequence = Enumerable.Range(1, 9);
+
+            // Update this block inside SolvePuzzle:
+            if (useRandomisation)
+            {
+                numberSequence = numberSequence.OrderBy(x => Random.Shared.Next());
+            }
+
+            //empty cell found, try numbers 1 to 9
+            foreach (int num in numberSequence)
+            {
+                //find where cell is in the board
+                int boxIndex = (nextEmptyCell.Row / 3) * 3 + (nextEmptyCell.Column / 3);
+
+                //try to place number
+                nextEmptyCell.Value = num;
+
+                //check if it breaks the board rules
+                if (isRowValid(nextEmptyCell.Row) && isColumnValid(nextEmptyCell.Column) && isBoxValid(boxIndex))
+                {
+                    //recursively call again to try and solve the rest of the board
+                    bool isPuzzleSolved = SolvePuzzle(useRandomisation);
+
+                    if (isPuzzleSolved)
+                    {
+                        return true;
+                    }
+                }
+
+                //if we got here we need to backtrack the last number was wrong
+                nextEmptyCell.Value = 0;
+            }
+            //if we got here, we tried all numbers and we need to backtrack further
+            return false;
+        }
+
+        public int CountSolutions(int maxCount = 2)
+        {
+            Cell? nextEmptyCell = Cells.FirstOrDefault(c => c.Value == 0);
+
+            // base case no empty cells left, we have a solution
+            if (nextEmptyCell == null)
+            {
+                return 1;
+            }
+
+            int totalSolutionsFound = 0;
+
+            for (int num = 1; num <= 9; num++)
+            {
+                nextEmptyCell.Value = num;
+
+                int boxIndex = (nextEmptyCell.Row / 3) * 3 + (nextEmptyCell.Column / 3);
+
+                if (isRowValid(nextEmptyCell.Row) &&
+                    isColumnValid(nextEmptyCell.Column) &&
+                    isBoxValid(boxIndex))
+                {
+                    // Recursive case: we have a solution,we want to count if there are more than 1
+                    totalSolutionsFound += CountSolutions(maxCount);
+
+                    // solution is not unique, puzzle is broken!
+                    if (totalSolutionsFound >= maxCount)
+                    {
+                        nextEmptyCell.Value = 0; //important! Clean up the cell before returning otherwise we carry stale data into the next recursive call
+                        return totalSolutionsFound;
+                    }
+                }
+                nextEmptyCell.Value = 0;
+            }
+            return totalSolutionsFound;
+        }
+
+        public void GeneratePuzzle(int cellsToEmpty)
+        {
+            //complete cleanup of the board
+            foreach (var cell in Cells)
+            {
+                cell.Value = 0;
+                cell.isStartingClue = false;
+            }
+
+            SolvePuzzle(useRandomisation: true);
+            
+            //creates a shuffled list of all cells in the board
+            var cellSequence = Enumerable.Range(0, 81).OrderBy(x => Random.Shared.Next()).ToList();
+
+            int cellsEmptiedCounter = 0;
+
+            //create empty cells in the board
+            foreach (int cellIndex in cellSequence)
+            {
+                if(cellsEmptiedCounter >= cellsToEmpty)
+                {
+                    break;
+                }
+
+                Cell targetCell = Cells[cellIndex];
+                int originalCellValue = targetCell.Value;
+                //temporarily empty the cell
+                targetCell.Value = 0;
+
+                //check if the board has still a unique solution
+                if (CountSolutions() == 1)
+                {
+                    cellsEmptiedCounter++;
+                }
+                else
+                {
+                    //put original value back in cause we broken the board rules
+                    targetCell.Value = originalCellValue;
+                }
+            }
+
+            //marks all remaining numbers in the board as permanent starting clues
+            foreach (var cell in Cells)
+            {
+                if (cell.Value != 0)
+                {
+                    cell.isStartingClue = true;
+                }
+            }
+        }
     }
-}
+}  
