@@ -60,5 +60,28 @@ namespace Sudoku.Engine.Tests
             // Assert
             Assert.False(success);
         }
+
+        [Fact]
+        public void SolveWithRandomisation_ShouldGenerateUniqueBoardsEachTime()
+        {
+            var board1 = new SudokuBoard();
+            var board2 = new SudokuBoard();
+
+            board1.SolvePuzzle(useRandomisation: true);
+            board2.SolvePuzzle(useRandomisation: true);
+
+            int identicalCellsCounter = 0;
+            for(int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if (board1.GetCell(i, j).Value == board2.GetCell(i, j).Value)
+                    {
+                        identicalCellsCounter++;
+                    }
+                }
+            }
+            Assert.True(identicalCellsCounter < 81, "Two identical boards generated despite the randomisation");
+        }
     }
 }

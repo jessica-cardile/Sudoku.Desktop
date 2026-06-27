@@ -8,6 +8,7 @@ namespace Sudoku.Engine
     public class SudokuBoard
     {
         public List<Cell> Cells { get; set; }
+        private static readonly Random _random = new();
 
         public SudokuBoard()
         {
@@ -149,7 +150,7 @@ namespace Sudoku.Engine
             return true;
         }
 
-        public bool SolvePuzzle()
+        public bool SolvePuzzle(bool useRandomisation = false)
         {
             //Find the first empty cell available
             Cell? nextEmptyCell = Cells.FirstOrDefault(c => c.Value == 0);
@@ -160,8 +161,15 @@ namespace Sudoku.Engine
                 return true;
             }
 
+            IEnumerable<int> numberSequence = Enumerable.Range(1, 9);
+
+            if (useRandomisation)
+            {
+                numberSequence = numberSequence.OrderBy(x => _random.Next());
+            }
+
             //empty cell found, try numbers 1 to 9
-            for (int num = 1; num <= 9; num++)
+            foreach (int num in numberSequence)
             {
                 //find where cell is in the board
                 int boxIndex = (nextEmptyCell.Row / 3) * 3 + (nextEmptyCell.Column / 3);
@@ -173,7 +181,7 @@ namespace Sudoku.Engine
                 if (isRowValid(nextEmptyCell.Row) && isColumnValid(nextEmptyCell.Column) && isBoxValid(boxIndex))
                 {
                     //recursively call again to try and solve the rest of the board
-                    bool isPuzzleSolved = SolvePuzzle();
+                    bool isPuzzleSolved = SolvePuzzle(useRandomisation);
 
                     if (isPuzzleSolved)
                     {
