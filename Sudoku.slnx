@@ -7,7 +7,9 @@
   </Configurations>
   <Project Path="Sudoku.Engine.Tests/Sudoku.Engine.Tests.csproj" />
   <Project Path="Sudoku.Engine/Sudoku.Engine.csproj" />
-  <Project Path="Sudoku.UI.Tests/Sudoku.UI.Tests.csproj" Id="9f333229-0329-4ff4-b35d-a8d79c18f649" />
+  <Project Path="Sudoku.UI.Tests/Sudoku.UI.Tests.csproj" Id="9f333229-0329-4ff4-b35d-a8d79c18f649">
+    <Platform Solution="Debug|Any CPU" Project="x64" />
+  </Project>
   <Project Path="Sudoku.UI/Sudoku.UI.csproj" Id="7e9ac417-081c-44fb-8e5f-75b04baf7f8c">
     <Platform Solution="*|Any CPU" Project="x64" />
     <Platform Solution="*|ARM64" Project="ARM64" />
@@ -15,4 +17,5 @@
     <Platform Solution="*|x86" Project="x86" />
     <Deploy />
   </Project>
+  <Project Path="Sudoku.ViewModels/Sudoku.ViewModels.csproj" Id="a1f1d130-9557-4f39-a9a8-64177d0a8397" />
 </Solution>

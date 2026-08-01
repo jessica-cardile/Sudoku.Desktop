@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sudoku.Engine\Sudoku.Engine.csproj" />
+    <ProjectReference Include="..\Sudoku.ViewModels\Sudoku.ViewModels.csproj" />
   </ItemGroup>
 
   <!--

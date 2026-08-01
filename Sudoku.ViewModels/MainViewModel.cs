@@ -4,7 +4,7 @@ using Sudoku.Engine;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Sudoku.UI.ViewModels;
+namespace Sudoku.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {

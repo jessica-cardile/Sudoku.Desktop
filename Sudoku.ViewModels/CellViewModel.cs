@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Sudoku.UI.ViewModels;
+namespace Sudoku.ViewModels;
 
 public partial class CellViewModel : ObservableObject
 {
