@@ -10,6 +10,18 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Bold/modern accent theme -->
+            <SolidColorBrush x:Key="AppAccentBrush" Color="#FF4B3DE0"/>
+            <SolidColorBrush x:Key="AppAccentTextBrush" Color="White"/>
+            <SolidColorBrush x:Key="AppMutedTextBrush" Color="#FF8A8A9A"/>
+            <SolidColorBrush x:Key="AppCellBorderBrush" Color="#FF3A3A45"/>
+
+            <!-- Global rounded-corner default for controls -->
+            <x:Double x:Key="ControlCornerRadiusValue">12</x:Double>
+            <CornerRadius x:Key="ControlCornerRadius">12</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+
             <!-- Other app resources here -->
         </ResourceDictionary>
     </Application.Resources>

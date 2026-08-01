@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="Sudoku.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,58 +7,191 @@
     mc:Ignorable="d"
     Title="Sudoku">
 
-    <!-- Main Container for the Window -->
-    <Grid Padding="20">
+    <Grid Padding="24" Background="#FF121218">
+        <Grid.Resources>
+            <Style x:Key="NumberPadButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}"/>
+                <Setter Property="BorderThickness" Value="1.5"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="18"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="4"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+        </Grid.Resources>
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Title Header -->
-        <TextBlock Text="Sudoku" 
-                   FontSize="28" 
-                   FontWeight="Bold" 
-                   HorizontalAlignment="Center" 
-                   Margin="0,0,0,20"
-                   Foreground="White"/>
-
-        <!-- 9x9 Sudoku Board Grid -->
-        <Grid Grid.Row="1" 
-              Width="450" 
-              Height="450" 
-              HorizontalAlignment="Center" 
-              VerticalAlignment="Center">
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
+        <!-- Top bar: title, difficulty selector, new game -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Outer Board Outline -->
-            <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="9" Grid.ColumnSpan="9"
-                    BorderBrush="White" BorderThickness="3" Background="#252525"/>
+            <TextBlock Grid.Column="0"
+                       Text="Sudoku"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="White"/>
 
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <ComboBox x:Name="DifficultyComboBox"
+                          Width="140"
+                          SelectedIndex="1">
+                    <ComboBoxItem Content="Easy"/>
+                    <ComboBoxItem Content="Medium"/>
+                    <ComboBoxItem Content="Hard"/>
+                    <ComboBoxItem Content="Expert"/>
+                </ComboBox>
+
+                <Button x:Name="NewGameButton"
+                        Content="New Game"
+                        Click="NewGameButton_Click"
+                        Padding="18,8"
+                        FontWeight="SemiBold"
+                        Background="{StaticResource AppAccentBrush}"
+                        Foreground="{StaticResource AppAccentTextBrush}"/>
+            </StackPanel>
         </Grid>
 
+        <!-- Board + sidebar -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="220"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Board -->
+            <Border Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="466"
+                    Height="466"
+                    Padding="8"
+                    CornerRadius="16"
+                    BorderBrush="{StaticResource AppAccentBrush}"
+                    BorderThickness="3"
+                    Background="#FF1B1B24">
+
+                <Grid x:Name="BoardGrid" Width="450" Height="450">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 3x3 subgrid dividers: the 4 internal lines only -->
+                    <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.Column="3" Width="3" HorizontalAlignment="Left" Fill="{StaticResource AppAccentBrush}"/>
+                    <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.Column="6" Width="3" HorizontalAlignment="Left" Fill="{StaticResource AppAccentBrush}"/>
+                    <Rectangle Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="9" Height="3" VerticalAlignment="Top" Fill="{StaticResource AppAccentBrush}"/>
+                    <Rectangle Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="9" Height="3" VerticalAlignment="Top" Fill="{StaticResource AppAccentBrush}"/>
+
+                </Grid>
+            </Border>
+
+            <!-- Sidebar -->
+            <StackPanel Grid.Column="1"
+                        Width="220"
+                        VerticalAlignment="Center"
+                        Spacing="20">
+
+                <!-- Timer -->
+                <Border CornerRadius="16"
+                        Padding="16"
+                        Background="#334B3DE0"
+                        BorderBrush="{StaticResource AppAccentBrush}"
+                        BorderThickness="1.5">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <TextBlock Text="TIME"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AppMutedTextBrush}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TimerText"
+                                   Text="00:00"
+                                   FontSize="32"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Number pad -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Row="0" Grid.Column="0" Content="1" Tag="1" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="0" Grid.Column="1" Content="2" Tag="2" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="0" Grid.Column="2" Content="3" Tag="3" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="1" Grid.Column="0" Content="4" Tag="4" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="1" Grid.Column="1" Content="5" Tag="5" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="1" Grid.Column="2" Content="6" Tag="6" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="2" Grid.Column="0" Content="7" Tag="7" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="2" Grid.Column="1" Content="8" Tag="8" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                    <Button Grid.Row="2" Grid.Column="2" Content="9" Tag="9" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                </Grid>
+
+                <!-- Erase -->
+                <Button x:Name="EraseButton"
+                        Content="Erase"
+                        Click="EraseButton_Click"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Padding="0,10"
+                        Background="Transparent"
+                        BorderBrush="{StaticResource AppAccentBrush}"
+                        BorderThickness="1.5"
+                        Foreground="White"/>
+
+                <!-- Hint -->
+                <Button x:Name="HintButton"
+                        Content="Hint"
+                        Click="HintButton_Click"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Padding="0,10"
+                        FontWeight="SemiBold"
+                        Background="{StaticResource AppAccentBrush}"
+                        Foreground="{StaticResource AppAccentTextBrush}"/>
+
+            </StackPanel>
+        </Grid>
     </Grid>
+
 </Window>
