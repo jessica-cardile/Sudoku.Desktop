@@ -1,18 +1,17 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Sudoku.Engine;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Sudoku.UI.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
     //This holds an ObservableCollection<CellViewModel> of all 81 cells,
-    //bridging them directly to the SudokuEngine
-    //for generating new puzzles and triggering the solver.
+    //bridging them directly to the SudokuEngine for generating new puzzles and triggering the solver.
 
-    /// <summary>
-    /// The 81 cells bound to the UI.
-    /// </summary>
+    private readonly SudokuBoard _engineBoard = new();
     public ObservableCollection<CellViewModel> Board { get; } = new();
 
     /// <summary>
@@ -29,7 +28,7 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        InitialiseGrid();
+        NewGame();
     }
 
     /// <summary>
@@ -38,12 +37,16 @@ public partial class MainViewModel : ObservableObject
     private void InitialiseGrid()
     {
         Board.Clear();
-        for (int row = 0; row < 9; row++)
+        _engineBoard.GeneratePuzzle(cellsToEmpty: 40);
+  
+        foreach (var engineCell in _engineBoard.Cells)
         {
-            for (int col = 0; col < 9; col++)
+            var cellViewModel = new CellViewModel(engineCell.Row, engineCell.Column)
             {
-                Board.Add(new CellViewModel(row, col));
-            }
+                Value = engineCell.Value,
+                IsGiven = engineCell.isStartingClue
+            };
+            Board.Add(cellViewModel);
         }
     }
 
@@ -84,8 +87,14 @@ public partial class MainViewModel : ObservableObject
         }
 
         SelectedCell.Value = number;
-
-        //TODO: Call the Engine to validate move or check if puzzle is solved!
+        var engineCell = _engineBoard.GetCell(SelectedCell.Row, SelectedCell.Column);
+        engineCell.Value = number;
+        int boxIndex = (SelectedCell.Row / 3) * 3 + (SelectedCell.Column / 3);
+        bool isValid = _engineBoard.isRowValid(SelectedCell.Row) &&
+                       _engineBoard.isColumnValid(SelectedCell.Column) &&
+                       _engineBoard.isBoxValid(boxIndex);
+        SelectedCell.IsError = !isValid;
+        CheckGameCompletion();
     }
 
     /// <summary>
@@ -100,6 +109,12 @@ public partial class MainViewModel : ObservableObject
         }
 
         SelectedCell.Value = 0;
+        SelectedCell.IsError = false;
+
+        var engineCell = _engineBoard.GetCell(SelectedCell.Row, SelectedCell.Column);
+        engineCell.Value = 0;
+
+        StatusMessage = $"Cleared cell ({SelectedCell.Row + 1}, {SelectedCell.Column + 1})";
     }
 
     /// <summary>
@@ -111,5 +126,24 @@ public partial class MainViewModel : ObservableObject
         InitialiseGrid();
         SelectedCell = null;
         StatusMessage = "New Game Started!";
+    }
+
+    /// <summary>
+    /// Evaluates whether all cells are populated and valid.
+    /// </summary>
+    private void CheckGameCompletion()
+    {
+        bool isFull = _engineBoard.Cells.All(c => c.Value != 0);
+
+        if (isFull && _engineBoard.IsBoardValid())
+        {
+            StatusMessage = "Congratulations! You solved the puzzle!";
+        }
+        else
+        {
+            StatusMessage = SelectedCell?.IsError == true
+                ? $"Conflict detected at ({SelectedCell.Row + 1}, {SelectedCell.Column + 1})!"
+                : $"Placed {SelectedCell?.Value} at ({SelectedCell!.Row + 1}, {SelectedCell.Column + 1})";
+        }
     }
 }
