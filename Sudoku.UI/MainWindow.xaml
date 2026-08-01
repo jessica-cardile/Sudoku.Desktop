@@ -51,7 +51,7 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Spacing="20"
-                            Margin="0,0,0,24">
+                            Margin="0,0,0,8">
                     <TextBlock Text="Sudoku at Night"
                                FontFamily="Curlz MT"
                                FontSize="64"
@@ -72,10 +72,12 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Spacing="12"
-                            Margin="0,0,0,24">
+                            Margin="0,0,0,8">
                     <ComboBox x:Name="DifficultyComboBox"
-                              Width="140"
+                              Width="160"
+                              Height="52"
                               FontFamily="Curlz MT"
+                              FontSize="20"
                               SelectedIndex="1">
                         <ComboBoxItem Content="Easy"/>
                         <ComboBoxItem Content="Medium"/>
@@ -86,8 +88,10 @@
                     <Button x:Name="NewGameButton"
                             Content="New Game"
                             Click="NewGameButton_Click"
-                            Padding="18,8"
+                            Height="52"
+                            Padding="28,8"
                             FontFamily="Curlz MT"
+                            FontSize="20"
                             FontWeight="SemiBold"
                             Background="{StaticResource AppAccentBrush}"
                             Foreground="{StaticResource AppAccentTextBrush}"/>
@@ -150,23 +154,32 @@
 
                     <!-- Timer -->
                     <Border CornerRadius="16"
-                            Padding="16"
+                            Padding="4"
+                            HorizontalAlignment="Center"
                             Background="#334B3DE0"
                             BorderBrush="{StaticResource AppAccentBrush}"
                             BorderThickness="1.5">
-                        <StackPanel HorizontalAlignment="Center" Spacing="4">
-                            <TextBlock Text="TIME  &#9790;"
-                                       FontFamily="Chiller"
-                                       FontWeight="SemiBold"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TimerText"
-                                       Text="00:00"
-                                       FontFamily="Curlz MT"
-                                       FontSize="32"
-                                       FontWeight="Bold"
-                                       Foreground="White"
-                                       HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                            <StackPanel Spacing="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="TIME"
+                                           FontFamily="Chiller"
+                                           FontWeight="SemiBold"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TimerText"
+                                           Text="00:00"
+                                           FontFamily="Curlz MT"
+                                           FontSize="32"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           Width="130"
+                                           TextAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <Image x:Name="TimerMoonIcon"
+                                   Source="Assets/half-moon-icon.png"
+                                   Width="100" Height="100"
+                                   VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
