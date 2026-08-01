@@ -25,6 +25,11 @@ namespace Sudoku.UI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        private const double MinBoardSize = 350;
+        private const double MaxBoardSize = 700;
+        private const double MinSidebarWidth = 200;
+        private const double MaxSidebarWidth = 320;
+
         private readonly Brush _accentBrush;
         private readonly Brush _accentTextBrush;
         private readonly Brush _cellBorderBrush;
@@ -32,6 +37,7 @@ namespace Sudoku.UI
         private readonly DispatcherTimer _gameTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         private TimeSpan _elapsed = TimeSpan.Zero;
 
+        private readonly List<TextBox> _cellTextBoxes = new();
         private TextBox? _selectedCell;
 
         public MainWindow()
@@ -62,8 +68,52 @@ namespace Sudoku.UI
 
             this.GenerateGridCells();
 
+            ContentArea.SizeChanged += ContentArea_SizeChanged;
+
             _gameTimer.Tick += GameTimer_Tick;
             _gameTimer.Start();
+        }
+
+        private void ContentArea_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            double boardSize = Math.Clamp(
+                Math.Min(e.NewSize.Width * 0.55, e.NewSize.Height - 40),
+                MinBoardSize, MaxBoardSize);
+
+            BoardGrid.Width = boardSize;
+            BoardGrid.Height = boardSize;
+            UpdateCellFontSize(boardSize);
+
+            double scale = boardSize / MinBoardSize;
+            UpdateSidebarScale(scale);
+        }
+
+        private void UpdateSidebarScale(double scale)
+        {
+            double clamped = Math.Clamp(scale, 1.0, 1.6);
+
+            SidebarPanel.Width = Math.Clamp(MinSidebarWidth * clamped, MinSidebarWidth, MaxSidebarWidth);
+            TimerText.FontSize = 24 * clamped;
+
+            foreach (var btn in NumberPadGrid.Children.OfType<Button>())
+            {
+                btn.FontSize = 16 * clamped;
+                btn.Height = 48 * clamped;
+            }
+
+            EraseButton.FontSize = HintButton.FontSize = 14 * clamped;
+            EraseButton.Height = HintButton.Height = 44 * clamped;
+        }
+
+        private void UpdateCellFontSize(double boardSize)
+        {
+            double cellSize = boardSize / 9;
+            double fontSize = Math.Clamp(cellSize * 0.5, 14, 28);
+
+            foreach (var textBox in _cellTextBoxes)
+            {
+                textBox.FontSize = fontSize;
+            }
         }
 
         private void GenerateGridCells()
@@ -75,7 +125,7 @@ namespace Sudoku.UI
                     // Create thin borders for individual cells
                     var cellBorder = new Border
                     {
-                        BorderBrush = new SolidColorBrush(Colors.DimGray),
+                        BorderBrush = (SolidColorBrush)Application.Current.Resources["BoardLineBrush"],
                         BorderThickness = new Thickness(
                             left: col == 0 ? 0 : 0.5,
                             top: row == 0 ? 0 : 0.5,
@@ -92,6 +142,7 @@ namespace Sudoku.UI
                     {
                         HorizontalContentAlignment = HorizontalAlignment.Center,
                         VerticalContentAlignment = VerticalAlignment.Center,
+                        FontFamily = new FontFamily("Segoe UI Variable"),
                         FontSize = 20,
                         MaxLength = 1,
                         BorderThickness = new Thickness(0),
@@ -116,6 +167,7 @@ namespace Sudoku.UI
                     };
 
                     cellBorder.Child = textBox;
+                    _cellTextBoxes.Add(textBox);
 
                     // Position within the 9x9 Grid
                     Grid.SetRow(cellBorder, row);

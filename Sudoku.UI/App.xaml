@@ -17,6 +17,14 @@
             <SolidColorBrush x:Key="AppMutedTextBrush" Color="#FF8A8A9A"/>
             <SolidColorBrush x:Key="AppCellBorderBrush" Color="#FF3A3A45"/>
 
+            <!-- Night/bat dark theme -->
+            <RadialGradientBrush x:Key="NightSkyBrush" Center="0.5,0.25" RadiusX="0.9" RadiusY="0.9">
+                <GradientStop Color="#2B1854" Offset="0.0"/>
+                <GradientStop Color="#160D2E" Offset="0.5"/>
+                <GradientStop Color="#0B0714" Offset="1.0"/>
+            </RadialGradientBrush>
+            <SolidColorBrush x:Key="BoardLineBrush" Color="#C9C3E0"/>
+
             <!-- Global rounded-corner default for controls -->
             <x:Double x:Key="ControlCornerRadiusValue">12</x:Double>
             <CornerRadius x:Key="ControlCornerRadius">12</CornerRadius>
