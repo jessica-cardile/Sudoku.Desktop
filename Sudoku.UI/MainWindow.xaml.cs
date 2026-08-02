@@ -40,8 +40,12 @@ namespace Sudoku.UI
         private TimeSpan _elapsed = TimeSpan.Zero;
         private bool _isPaused;
 
-        private readonly List<TextBox> _cellTextBoxes = new();
-        private TextBox? _selectedCell;
+        private readonly List<Button> _cellButtons = new();
+        private readonly List<Button> _highlightedCells = new();
+
+        // The digit (1-9) or eraser (0) currently armed from the sidebar, awaiting a cell click.
+        private int? _armedValue;
+        private Button? _armedButton;
 
         private readonly MainViewModel _viewModel = new();
 
@@ -114,11 +118,11 @@ namespace Sudoku.UI
         private void UpdateCellFontSize(double boardSize)
         {
             double cellSize = boardSize / 9;
-            double fontSize = Math.Clamp(cellSize * 0.5, 14, 28);
+            double fontSize = Math.Clamp(cellSize * 0.55, 16, 34);
 
-            foreach (var textBox in _cellTextBoxes)
+            foreach (var button in _cellButtons)
             {
-                textBox.FontSize = fontSize;
+                button.FontSize = fontSize;
             }
         }
 
@@ -143,37 +147,27 @@ namespace Sudoku.UI
                         VerticalAlignment = VerticalAlignment.Stretch
                     };
 
-                    // Create input box for digits
-                    var textBox = new TextBox
+                    // Create the clickable cell that displays a digit
+                    var cellButton = new Button
                     {
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch,
                         HorizontalContentAlignment = HorizontalAlignment.Center,
                         VerticalContentAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0),
+                        Padding = new Thickness(0),
                         FontFamily = new FontFamily("Segoe UI Variable"),
-                        FontSize = 20,
-                        MaxLength = 1,
+                        FontSize = 24,
                         BorderThickness = new Thickness(0),
                         CornerRadius = new CornerRadius(0),
-                        Background = new SolidColorBrush(Colors.Transparent)
+                        Background = new SolidColorBrush(Colors.Transparent),
+                        Foreground = new SolidColorBrush(Colors.White)
                     };
 
-                    textBox.GotFocus += (s, e) =>
-                    {
-                        _selectedCell = textBox;
-                        cellBorder.Background = (SolidColorBrush)Application.Current.Resources["AppAccentBrush"];
-                    };
+                    cellButton.Click += (s, e) => OnCellClicked(cellButton);
 
-                    textBox.LostFocus += (s, e) =>
-                    {
-                        cellBorder.Background = new SolidColorBrush(Colors.Transparent);
-
-                        if (ReferenceEquals(_selectedCell, textBox))
-                        {
-                            _selectedCell = null;
-                        }
-                    };
-
-                    cellBorder.Child = textBox;
-                    _cellTextBoxes.Add(textBox);
+                    cellBorder.Child = cellButton;
+                    _cellButtons.Add(cellButton);
 
                     // Position within the 9x9 Grid
                     Grid.SetRow(cellBorder, row);
@@ -187,23 +181,89 @@ namespace Sudoku.UI
 
         private void NumberPad_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedCell is null || _selectedCell.IsReadOnly)
+            if (sender is Button button && button.Tag is string digitText && int.TryParse(digitText, out int digit))
             {
-                return;
-            }
-
-            if (sender is Button button && button.Tag is string digit)
-            {
-                _selectedCell.Text = digit;
+                ArmAction(digit, button);
             }
         }
 
         private void EraseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedCell is not null && !_selectedCell.IsReadOnly)
+            ArmAction(0, EraseButton);
+        }
+
+        private void ArmAction(int value, Button sourceButton)
+        {
+            bool wasAlreadyArmed = _armedButton == sourceButton;
+
+            DisarmAction();
+
+            if (!wasAlreadyArmed)
             {
-                _selectedCell.Text = string.Empty;
+                _armedValue = value;
+                _armedButton = sourceButton;
+                sourceButton.Background = _accentBrush;
+                sourceButton.Foreground = _accentTextBrush;
+
+                if (value != 0)
+                {
+                    HighlightMatchingCells(value);
+                }
             }
+        }
+
+        private void DisarmAction()
+        {
+            if (_armedButton is not null)
+            {
+                _armedButton.Background = new SolidColorBrush(Colors.Transparent);
+                _armedButton.Foreground = new SolidColorBrush(Colors.White);
+            }
+
+            _armedButton = null;
+            _armedValue = null;
+
+            ClearMatchingHighlights();
+        }
+
+        private void HighlightMatchingCells(int digit)
+        {
+            string digitText = digit.ToString();
+
+            foreach (var button in _cellButtons)
+            {
+                if (button.Content as string == digitText)
+                {
+                    button.Background = _accentBrush;
+                    _highlightedCells.Add(button);
+                }
+            }
+        }
+
+        private void ClearMatchingHighlights()
+        {
+            foreach (var button in _highlightedCells)
+            {
+                button.Background = new SolidColorBrush(Colors.Transparent);
+            }
+
+            _highlightedCells.Clear();
+        }
+
+        private void OnCellClicked(Button cellButton)
+        {
+            if (cellButton.Tag is bool isGiven && isGiven)
+            {
+                return;
+            }
+
+            if (_armedValue is not int value)
+            {
+                return;
+            }
+
+            cellButton.Content = value == 0 ? string.Empty : value.ToString();
+            DisarmAction();
         }
 
         private void NewGameButton_Click(object sender, RoutedEventArgs e)
@@ -211,21 +271,21 @@ namespace Sudoku.UI
             var difficulty = (Difficulty)DifficultyComboBox.SelectedIndex;
             _viewModel.NewGame(difficulty);
 
+            DisarmAction();
             ApplyBoardToUi();
             ResetTimerAndPauseState();
         }
 
         private void ApplyBoardToUi()
         {
-            for (int i = 0; i < _cellTextBoxes.Count; i++)
+            for (int i = 0; i < _cellButtons.Count; i++)
             {
                 var cell = _viewModel.Board[i];
-                var textBox = _cellTextBoxes[i];
+                var button = _cellButtons[i];
 
-                textBox.Text = cell.Value == 0 ? string.Empty : cell.Value.ToString();
-                textBox.IsReadOnly = cell.IsGiven;
-                textBox.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
-                textBox.Foreground = new SolidColorBrush(Colors.White);
+                button.Content = cell.Value == 0 ? string.Empty : cell.Value.ToString();
+                button.Tag = cell.IsGiven;
+                button.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
             }
         }
 
