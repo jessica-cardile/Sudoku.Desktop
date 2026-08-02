@@ -135,7 +135,7 @@ namespace Sudoku.UI
                     // Create thin borders for individual cells
                     var cellBorder = new Border
                     {
-                        BorderBrush = (SolidColorBrush)Application.Current.Resources["BoardLineBrush"],
+                        BorderBrush = new SolidColorBrush(Colors.White) { Opacity = 0.35 },
                         BorderThickness = new Thickness(
                             left: col == 0 ? 0 : 0.5,
                             top: row == 0 ? 0 : 0.5,
@@ -156,7 +156,7 @@ namespace Sudoku.UI
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(0),
                         Padding = new Thickness(0),
-                        FontFamily = new FontFamily("Segoe UI Variable"),
+                        FontFamily = new FontFamily("Curlz MT"),
                         FontSize = 24,
                         BorderThickness = new Thickness(0),
                         CornerRadius = new CornerRadius(0),
