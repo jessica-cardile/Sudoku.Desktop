@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.UI.Text;
+using Sudoku.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -41,6 +43,8 @@ namespace Sudoku.UI
         private readonly List<TextBox> _cellTextBoxes = new();
         private TextBox? _selectedCell;
 
+        private readonly MainViewModel _viewModel = new();
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -68,6 +72,7 @@ namespace Sudoku.UI
             }
 
             this.GenerateGridCells();
+            this.ApplyBoardToUi();
 
             ContentArea.SizeChanged += ContentArea_SizeChanged;
 
@@ -182,7 +187,7 @@ namespace Sudoku.UI
 
         private void NumberPad_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedCell is null)
+            if (_selectedCell is null || _selectedCell.IsReadOnly)
             {
                 return;
             }
@@ -195,7 +200,7 @@ namespace Sudoku.UI
 
         private void EraseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedCell is not null)
+            if (_selectedCell is not null && !_selectedCell.IsReadOnly)
             {
                 _selectedCell.Text = string.Empty;
             }
@@ -203,7 +208,37 @@ namespace Sudoku.UI
 
         private void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: generate a new puzzle for the selected difficulty.
+            var difficulty = (Difficulty)DifficultyComboBox.SelectedIndex;
+            _viewModel.NewGame(difficulty);
+
+            ApplyBoardToUi();
+            ResetTimerAndPauseState();
+        }
+
+        private void ApplyBoardToUi()
+        {
+            for (int i = 0; i < _cellTextBoxes.Count; i++)
+            {
+                var cell = _viewModel.Board[i];
+                var textBox = _cellTextBoxes[i];
+
+                textBox.Text = cell.Value == 0 ? string.Empty : cell.Value.ToString();
+                textBox.IsReadOnly = cell.IsGiven;
+                textBox.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
+                textBox.Foreground = new SolidColorBrush(Colors.White);
+            }
+        }
+
+        private void ResetTimerAndPauseState()
+        {
+            _elapsed = TimeSpan.Zero;
+            TimerText.Text = "00:00";
+
+            _isPaused = false;
+            PauseButton.Content = "Pause";
+            PauseOverlay.Visibility = Visibility.Collapsed;
+
+            _gameTimer.Start();
         }
 
         private void HintButton_Click(object sender, RoutedEventArgs e)

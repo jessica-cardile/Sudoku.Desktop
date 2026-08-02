@@ -28,17 +28,29 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        NewGame();
+        NewGame(Difficulty.Medium);
     }
 
     /// <summary>
-    /// Populates the 9x9 board with empty cell view models.
+    /// Maps a difficulty level to the number of cells the engine should empty out.
     /// </summary>
-    private void InitialiseGrid()
+    private static int GetCellsToEmpty(Difficulty difficulty) => difficulty switch
+    {
+        Difficulty.Easy => 36,
+        Difficulty.Medium => 40,
+        Difficulty.Hard => 46,
+        Difficulty.Expert => 52,
+        _ => 40
+    };
+
+    /// <summary>
+    /// Populates the 9x9 board with a freshly generated puzzle for the given difficulty.
+    /// </summary>
+    private void InitialiseGrid(Difficulty difficulty)
     {
         Board.Clear();
-        _engineBoard.GeneratePuzzle(cellsToEmpty: 40);
-  
+        _engineBoard.GeneratePuzzle(cellsToEmpty: GetCellsToEmpty(difficulty));
+
         foreach (var engineCell in _engineBoard.Cells)
         {
             var cellViewModel = new CellViewModel(engineCell.Row, engineCell.Column)
@@ -118,12 +130,12 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Resets the board!
+    /// Resets the board with a new puzzle for the given difficulty.
     /// </summary>
     [RelayCommand]
-    private void NewGame()
+    public void NewGame(Difficulty difficulty = Difficulty.Medium)
     {
-        InitialiseGrid();
+        InitialiseGrid(difficulty);
         SelectedCell = null;
         StatusMessage = "New Game Started!";
     }
