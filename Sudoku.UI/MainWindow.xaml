@@ -251,7 +251,9 @@
                                 Padding="0,10"
                                 FontFamily="Chiller"
                                 FontWeight="SemiBold"
-                                Background="{StaticResource AppAccentBrush}"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource AppAccentBrush}"
+                                BorderThickness="1.5"
                                 Foreground="{StaticResource AppAccentTextBrush}"/>
 
                         <Button x:Name="PauseButton" Grid.Column="2"
