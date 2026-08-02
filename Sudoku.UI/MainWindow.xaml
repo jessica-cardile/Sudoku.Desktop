@@ -107,39 +107,55 @@
                             BorderThickness="3"
                             Background="#FF1B1B24">
 
-                        <Grid x:Name="BoardGrid"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid x:Name="BoardGrid"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <!-- 3x3 subgrid dividers: the 4 internal lines only -->
-                            <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.Column="3" Width="3" HorizontalAlignment="Left" Fill="{StaticResource AppAccentBrush}"/>
-                            <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.Column="6" Width="3" HorizontalAlignment="Left" Fill="{StaticResource AppAccentBrush}"/>
-                            <Rectangle Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="9" Height="3" VerticalAlignment="Top" Fill="{StaticResource AppAccentBrush}"/>
-                            <Rectangle Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="9" Height="3" VerticalAlignment="Top" Fill="{StaticResource AppAccentBrush}"/>
+                                <!-- 3x3 subgrid dividers: the 4 internal lines only -->
+                                <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.Column="3" Width="3" HorizontalAlignment="Left" Fill="{StaticResource AppAccentBrush}"/>
+                                <Rectangle Grid.Row="0" Grid.RowSpan="9" Grid.Column="6" Width="3" HorizontalAlignment="Left" Fill="{StaticResource AppAccentBrush}"/>
+                                <Rectangle Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="9" Height="3" VerticalAlignment="Top" Fill="{StaticResource AppAccentBrush}"/>
+                                <Rectangle Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="9" Height="3" VerticalAlignment="Top" Fill="{StaticResource AppAccentBrush}"/>
 
+                            </Grid>
+
+                            <!-- Pause overlay: blocks board interaction while paused -->
+                            <Border x:Name="PauseOverlay"
+                                    Visibility="Collapsed"
+                                    CornerRadius="12"
+                                    Background="#CC1B1B24">
+                                <TextBlock Text="Paused"
+                                           FontFamily="Curlz MT"
+                                           FontSize="48"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>
@@ -207,10 +223,54 @@
                         <Button Grid.Row="2" Grid.Column="2" Content="9" Tag="9" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
                     </Grid>
 
-                    <!-- Erase -->
-                    <Button x:Name="EraseButton"
-                            Content="Erase"
-                            Click="EraseButton_Click"
+                    <!-- Actions: Erase / Hint / Pause -->
+                    <Grid x:Name="ActionButtonsGrid" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button x:Name="EraseButton" Grid.Column="0"
+                                Content="Erase"
+                                Click="EraseButton_Click"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="0,10"
+                                FontFamily="Chiller"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource AppAccentBrush}"
+                                BorderThickness="1.5"
+                                Foreground="White"/>
+
+                        <Button x:Name="HintButton" Grid.Column="1"
+                                Content="Hint"
+                                Click="HintButton_Click"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="0,10"
+                                FontFamily="Chiller"
+                                FontWeight="SemiBold"
+                                Background="{StaticResource AppAccentBrush}"
+                                Foreground="{StaticResource AppAccentTextBrush}"/>
+
+                        <Button x:Name="PauseButton" Grid.Column="2"
+                                Content="Pause"
+                                Click="PauseButton_Click"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="0,10"
+                                FontFamily="Chiller"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource AppAccentBrush}"
+                                BorderThickness="1.5"
+                                Foreground="White"/>
+                    </Grid>
+
+                    <!-- Settings -->
+                    <Button x:Name="SettingsButton"
+                            Content="Settings"
+                            Click="SettingsButton_Click"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             Padding="0,10"
@@ -219,18 +279,6 @@
                             BorderBrush="{StaticResource AppAccentBrush}"
                             BorderThickness="1.5"
                             Foreground="White"/>
-
-                    <!-- Hint -->
-                    <Button x:Name="HintButton"
-                            Content="Hint"
-                            Click="HintButton_Click"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center"
-                            Padding="0,10"
-                            FontFamily="Chiller"
-                            FontWeight="SemiBold"
-                            Background="{StaticResource AppAccentBrush}"
-                            Foreground="{StaticResource AppAccentTextBrush}"/>
 
                 </StackPanel>
             </Grid>

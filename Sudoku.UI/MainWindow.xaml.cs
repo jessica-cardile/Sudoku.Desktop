@@ -36,6 +36,7 @@ namespace Sudoku.UI
 
         private readonly DispatcherTimer _gameTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         private TimeSpan _elapsed = TimeSpan.Zero;
+        private bool _isPaused;
 
         private readonly List<TextBox> _cellTextBoxes = new();
         private TextBox? _selectedCell;
@@ -101,8 +102,8 @@ namespace Sudoku.UI
                 btn.Height = 48 * clamped;
             }
 
-            EraseButton.FontSize = HintButton.FontSize = 14 * clamped;
-            EraseButton.Height = HintButton.Height = 44 * clamped;
+            EraseButton.FontSize = HintButton.FontSize = PauseButton.FontSize = SettingsButton.FontSize = 14 * clamped;
+            EraseButton.Height = HintButton.Height = PauseButton.Height = SettingsButton.Height = 44 * clamped;
         }
 
         private void UpdateCellFontSize(double boardSize)
@@ -208,6 +209,29 @@ namespace Sudoku.UI
         private void HintButton_Click(object sender, RoutedEventArgs e)
         {
             // TODO: reveal a hint for the selected cell.
+        }
+
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            _isPaused = !_isPaused;
+
+            if (_isPaused)
+            {
+                _gameTimer.Stop();
+                PauseButton.Content = "Resume";
+                PauseOverlay.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _gameTimer.Start();
+                PauseButton.Content = "Pause";
+                PauseOverlay.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: open the settings panel.
         }
 
         private void GameTimer_Tick(object? sender, object e)
