@@ -81,7 +81,7 @@ public partial class MainViewModel : ObservableObject
     /// Sets the selected cell when clicked in the UI.       
     /// </summary>
     [RelayCommand]
-    private void SelectCell(CellViewModel cell)
+    public void SelectCell(CellViewModel cell)
     {
         SelectedCell = cell;
     }
@@ -101,11 +101,7 @@ public partial class MainViewModel : ObservableObject
         SelectedCell.Value = number;
         var engineCell = _engineBoard.GetCell(SelectedCell.Row, SelectedCell.Column);
         engineCell.Value = number;
-        int boxIndex = (SelectedCell.Row / 3) * 3 + (SelectedCell.Column / 3);
-        bool isValid = _engineBoard.isRowValid(SelectedCell.Row) &&
-                       _engineBoard.isColumnValid(SelectedCell.Column) &&
-                       _engineBoard.isBoxValid(boxIndex);
-        SelectedCell.IsError = !isValid;
+        SelectedCell.IsError = number != _engineBoard.GetSolutionValue(SelectedCell.Row, SelectedCell.Column);
         CheckGameCompletion();
     }
 

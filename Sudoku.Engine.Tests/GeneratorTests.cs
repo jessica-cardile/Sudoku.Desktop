@@ -23,5 +23,32 @@ namespace Sudoku.Engine.Tests
             int solutionCount = board.CountSolutions();
             Assert.Equal(1, solutionCount);
         }
+
+        [Fact]
+        public void GeneratePuzzle_ShouldRetainFullyValidSolution()
+        {
+            var board = new SudokuBoard();
+            board.GeneratePuzzle(cellsToEmpty: 40);
+
+            // Reconstruct the retained solution into a fresh board and verify it's a
+            // genuinely complete, duplicate-free Sudoku grid (not just zeros/garbage).
+            var solutionBoard = new SudokuBoard();
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    solutionBoard.GetCell(row, col).Value = board.GetSolutionValue(row, col);
+                }
+            }
+
+            Assert.True(solutionBoard.Cells.All(c => c.Value != 0));
+            Assert.True(solutionBoard.IsBoardValid());
+
+            // Starting clues must match the retained solution exactly.
+            foreach (var cell in board.Cells.Where(c => c.isStartingClue))
+            {
+                Assert.Equal(cell.Value, board.GetSolutionValue(cell.Row, cell.Column));
+            }
+        }
     }
 }

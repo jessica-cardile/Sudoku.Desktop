@@ -164,7 +164,8 @@ namespace Sudoku.UI
                         Foreground = new SolidColorBrush(Colors.White)
                     };
 
-                    cellButton.Click += (s, e) => OnCellClicked(cellButton);
+                    int cellIndex = row * 9 + col;
+                    cellButton.Click += (s, e) => OnCellClicked(cellButton, cellIndex);
 
                     cellBorder.Child = cellButton;
                     _cellButtons.Add(cellButton);
@@ -250,9 +251,11 @@ namespace Sudoku.UI
             _highlightedCells.Clear();
         }
 
-        private void OnCellClicked(Button cellButton)
+        private void OnCellClicked(Button cellButton, int cellIndex)
         {
-            if (cellButton.Tag is bool isGiven && isGiven)
+            var cellViewModel = _viewModel.Board[cellIndex];
+
+            if (cellViewModel.IsGiven)
             {
                 return;
             }
@@ -262,7 +265,20 @@ namespace Sudoku.UI
                 return;
             }
 
-            cellButton.Content = value == 0 ? string.Empty : value.ToString();
+            _viewModel.SelectCell(cellViewModel);
+
+            if (value == 0)
+            {
+                _viewModel.ClearSelectedCell();
+            }
+            else
+            {
+                _viewModel.InputNumber(value);
+            }
+
+            cellButton.Content = cellViewModel.Value == 0 ? string.Empty : cellViewModel.Value.ToString();
+            cellButton.Foreground = new SolidColorBrush(cellViewModel.IsError ? Colors.Red : Colors.White);
+
             DisarmAction();
         }
 
@@ -284,8 +300,8 @@ namespace Sudoku.UI
                 var button = _cellButtons[i];
 
                 button.Content = cell.Value == 0 ? string.Empty : cell.Value.ToString();
-                button.Tag = cell.IsGiven;
                 button.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
+                button.Foreground = new SolidColorBrush(Colors.White);
             }
         }
 

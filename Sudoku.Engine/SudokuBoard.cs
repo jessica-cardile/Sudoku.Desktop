@@ -9,6 +9,8 @@ namespace Sudoku.Engine
     {
         public List<Cell> Cells { get; set; }
 
+        private readonly int[,] _solution = new int[9, 9];
+
         public SudokuBoard()
         {
             Cells = new List<Cell>();
@@ -29,6 +31,8 @@ namespace Sudoku.Engine
                 }
             }
         }
+
+        public int GetSolutionValue(int row, int column) => _solution[row, column];
 
         public Cell GetCell(int targetRow, int targetColumn)
         {
@@ -243,7 +247,13 @@ namespace Sudoku.Engine
             }
 
             SolvePuzzle(useRandomisation: true);
-            
+
+            //remember the fully solved grid before we carve out the puzzle below
+            foreach (var cell in Cells)
+            {
+                _solution[cell.Row, cell.Column] = cell.Value;
+            }
+
             //creates a shuffled list of all cells in the board
             var cellSequence = Enumerable.Range(0, 81).OrderBy(x => Random.Shared.Next()).ToList();
 

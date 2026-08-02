@@ -98,6 +98,31 @@ public class MainViewModelTests
     }
 
     [Fact]
+    public void InputNumber_OnlyTrueSolutionValueClearsError()
+    {
+        // Arrange
+        var viewModel = new MainViewModel();
+        var editableCell = viewModel.Board.First(c => !c.IsGiven);
+        viewModel.SelectCellCommand.Execute(editableCell);
+
+        // Act: try every digit 1-9, including ones that don't conflict with any
+        // existing row/column/box value but still don't match the true solution.
+        int correctCount = 0;
+        for (int digit = 1; digit <= 9; digit++)
+        {
+            viewModel.InputNumber(digit);
+
+            if (!editableCell.IsError)
+            {
+                correctCount++;
+            }
+        }
+
+        // Assert: exactly one digit (the true solution) should ever clear the error.
+        Assert.Equal(1, correctCount);
+    }
+
+    [Fact]
     public void ClearSelectedCell_ResetsValueAndErrorState()
     {
         // Arrange
