@@ -147,7 +147,7 @@
                             <Border x:Name="PauseOverlay"
                                     Visibility="Collapsed"
                                     CornerRadius="12"
-                                    Background="#CC1B1B24">
+                                    Background="#FF1B1B24">
                                 <TextBlock Text="Paused"
                                            FontFamily="Curlz MT"
                                            FontSize="48"
