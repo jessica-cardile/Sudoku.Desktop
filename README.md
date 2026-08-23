@@ -12,5 +12,6 @@ Visual Studio solution & project architecture configuration.
 81-cell flat array implementation.
 Row, Column, and 3x3 Box uniqueness validation rules
 Board solver implemented using recursive backtracking algorithm + tested (XUnit)
+Currently styling! :) 
 
 Work in progress! 🐣
