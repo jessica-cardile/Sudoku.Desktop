@@ -39,6 +39,8 @@ namespace Sudoku.UI
         private readonly DispatcherTimer _gameTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         private TimeSpan _elapsed = TimeSpan.Zero;
         private bool _isPaused;
+        private bool _isReady;
+        private bool _wasPausedBeforeConfirmDialog;
 
         private readonly List<Button> _cellButtons = new();
         private readonly List<Button> _highlightedCells = new();
@@ -82,6 +84,8 @@ namespace Sudoku.UI
 
             _gameTimer.Tick += GameTimer_Tick;
             _gameTimer.Start();
+
+            _isReady = true;
         }
 
         private void ContentArea_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -284,12 +288,80 @@ namespace Sudoku.UI
 
         private void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
-            var difficulty = (Difficulty)DifficultyComboBox.SelectedIndex;
+            StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
+        }
+
+        private void StartNewGame(Difficulty difficulty)
+        {
             _viewModel.NewGame(difficulty);
 
             DisarmAction();
             ApplyBoardToUi();
             ResetTimerAndPauseState();
+        }
+
+        private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isReady)
+            {
+                return;
+            }
+
+            ShowNewGameConfirmDialog();
+        }
+
+        private void ShowNewGameConfirmDialog()
+        {
+            _wasPausedBeforeConfirmDialog = _isPaused;
+
+            if (!_isPaused)
+            {
+                _gameTimer.Stop();
+            }
+
+            DifficultyComboBox.IsEnabled = false;
+            NewGameButton.IsEnabled = false;
+            SetSidebarButtonsEnabled(false);
+
+            NewGameConfirmOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void HideNewGameConfirmDialogChrome()
+        {
+            NewGameConfirmOverlay.Visibility = Visibility.Collapsed;
+
+            DifficultyComboBox.IsEnabled = true;
+            NewGameButton.IsEnabled = true;
+            SetSidebarButtonsEnabled(true);
+        }
+
+        private void SetSidebarButtonsEnabled(bool isEnabled)
+        {
+            foreach (var button in NumberPadGrid.Children.OfType<Button>())
+            {
+                button.IsEnabled = isEnabled;
+            }
+
+            EraseButton.IsEnabled = isEnabled;
+            HintButton.IsEnabled = isEnabled;
+            PauseButton.IsEnabled = isEnabled;
+            SettingsButton.IsEnabled = isEnabled;
+        }
+
+        private void NewGameConfirmYesButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideNewGameConfirmDialogChrome();
+            StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
+        }
+
+        private void NewGameConfirmNoButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideNewGameConfirmDialogChrome();
+
+            if (!_wasPausedBeforeConfirmDialog)
+            {
+                _gameTimer.Start();
+            }
         }
 
         private void ApplyBoardToUi()
