@@ -11,7 +11,8 @@ Tech Stack: C#, .NET, and WinUI 3 via the Windows App SDK.
 Visual Studio solution & project architecture configuration.
 81-cell flat array implementation.
 Row, Column, and 3x3 Box uniqueness validation rules
-Board solver implemented using recursive backtracking algorithm + tested (XUnit)
+Board solver implemented using recursive backtracking algorithm + tested (XUnit).
+
 Currently styling! :) 
 
 Work in progress! 🐣
