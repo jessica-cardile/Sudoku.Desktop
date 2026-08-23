@@ -4,17 +4,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:Sudoku.UI"
     mc:Ignorable="d"
     Title="Sudoku">
 
     <Grid x:Name="RootGrid" Padding="24" Tapped="RootGrid_Tapped">
         <Grid.Background>
-            <ImageBrush ImageSource="Assets/app-dark-background.png" Stretch="UniformToFill"/>
+            <ImageBrush ImageSource="Assets/app-dark-background.png" Stretch="UniformToFill" Opacity="0.6"/>
         </Grid.Background>
 
         <Grid.Resources>
             <Style x:Key="NumberPadButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Background" Value="#334B3DE0"/>
                 <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}"/>
                 <Setter Property="BorderThickness" Value="1.5"/>
                 <Setter Property="Foreground" Value="White"/>
@@ -26,6 +27,12 @@
                 <Setter Property="VerticalAlignment" Value="Stretch"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Opacity" Value="1"/>
+                <Setter Property="Shadow">
+                    <Setter.Value>
+                        <ThemeShadow/>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </Grid.Resources>
 
@@ -73,7 +80,7 @@
                             VerticalAlignment="Center"
                             Spacing="12"
                             Margin="0,0,0,8">
-                    <ComboBox x:Name="DifficultyComboBox"
+                    <local:PointerCursorComboBox x:Name="DifficultyComboBox"
                               Width="160"
                               Height="52"
                               FontFamily="Curlz MT"
@@ -84,9 +91,9 @@
                         <ComboBoxItem Content="Medium"/>
                         <ComboBoxItem Content="Hard"/>
                         <ComboBoxItem Content="Expert"/>
-                    </ComboBox>
+                    </local:PointerCursorComboBox>
 
-                    <Button x:Name="NewGameButton"
+                    <local:PointerCursorButton x:Name="NewGameButton"
                             Content="New Game"
                             Click="NewGameButton_Click"
                             Height="52"
@@ -94,8 +101,8 @@
                             FontFamily="Curlz MT"
                             FontSize="20"
                             FontWeight="SemiBold"
-                            Background="{StaticResource AppAccentBrush}"
-                            Foreground="{StaticResource AppAccentTextBrush}"/>
+                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                            Foreground="White"/>
                 </StackPanel>
 
                 <!-- Board -->
@@ -175,7 +182,7 @@
                                     <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Center"
                                                 Spacing="16">
-                                        <Button x:Name="NewGameConfirmYesButton"
+                                        <local:PointerCursorButton x:Name="NewGameConfirmYesButton"
                                                 Content="Yes"
                                                 Click="NewGameConfirmYesButton_Click"
                                                 Padding="28,8"
@@ -184,7 +191,7 @@
                                                 FontWeight="SemiBold"
                                                 Background="{StaticResource AppAccentBrush}"
                                                 Foreground="{StaticResource AppAccentTextBrush}"/>
-                                        <Button x:Name="NewGameConfirmNoButton"
+                                        <local:PointerCursorButton x:Name="NewGameConfirmNoButton"
                                                 Content="No"
                                                 Click="NewGameConfirmNoButton_Click"
                                                 Padding="28,8"
@@ -254,15 +261,15 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button Grid.Row="0" Grid.Column="0" Content="1" Tag="1" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="0" Grid.Column="1" Content="2" Tag="2" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="0" Grid.Column="2" Content="3" Tag="3" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="1" Grid.Column="0" Content="4" Tag="4" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="5" Tag="5" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="1" Grid.Column="2" Content="6" Tag="6" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="2" Grid.Column="0" Content="7" Tag="7" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="2" Grid.Column="1" Content="8" Tag="8" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
-                        <Button Grid.Row="2" Grid.Column="2" Content="9" Tag="9" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="0" Grid.Column="0" Content="1" Tag="1" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="0" Grid.Column="1" Content="2" Tag="2" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="0" Grid.Column="2" Content="3" Tag="3" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="1" Grid.Column="0" Content="4" Tag="4" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="1" Grid.Column="1" Content="5" Tag="5" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="1" Grid.Column="2" Content="6" Tag="6" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="2" Grid.Column="0" Content="7" Tag="7" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="2" Grid.Column="1" Content="8" Tag="8" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
+                        <local:PointerCursorButton Grid.Row="2" Grid.Column="2" Content="9" Tag="9" Click="NumberPad_Click" Style="{StaticResource NumberPadButtonStyle}"/>
                     </Grid>
 
                     <!-- Actions: Erase / Hint / Pause -->
@@ -273,7 +280,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Button x:Name="EraseButton" Grid.Column="0"
+                        <local:PointerCursorButton x:Name="EraseButton" Grid.Column="0"
                                 Content="Erase"
                                 Click="EraseButton_Click"
                                 HorizontalAlignment="Stretch"
@@ -285,7 +292,7 @@
                                 BorderThickness="1.5"
                                 Foreground="White"/>
 
-                        <Button x:Name="HintButton" Grid.Column="1"
+                        <local:PointerCursorButton x:Name="HintButton" Grid.Column="1"
                                 Content="Hint"
                                 Click="HintButton_Click"
                                 HorizontalAlignment="Stretch"
@@ -298,7 +305,7 @@
                                 BorderThickness="1.5"
                                 Foreground="{StaticResource AppAccentTextBrush}"/>
 
-                        <Button x:Name="PauseButton" Grid.Column="2"
+                        <local:PointerCursorButton x:Name="PauseButton" Grid.Column="2"
                                 Content="Pause"
                                 Click="PauseButton_Click"
                                 HorizontalAlignment="Stretch"
@@ -312,7 +319,7 @@
                     </Grid>
 
                     <!-- Settings -->
-                    <Button x:Name="SettingsButton"
+                    <local:PointerCursorButton x:Name="SettingsButton"
                             Content="Settings"
                             Click="SettingsButton_Click"
                             HorizontalAlignment="Stretch"

@@ -12,11 +12,23 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Bold/modern accent theme -->
+            <!-- accent theme -->
             <SolidColorBrush x:Key="AppAccentBrush" Color="#FF4B3DE0"/>
             <SolidColorBrush x:Key="AppAccentTextBrush" Color="White"/>
             <SolidColorBrush x:Key="AppMutedTextBrush" Color="#FF8A8A9A"/>
             <SolidColorBrush x:Key="AppCellBorderBrush" Color="#FF3A3A45"/>
+
+            <!-- User-placed digit color: ~6.3:1 contrast against the board's #1B1B24
+                 background, passing WCAG AA (4.5:1) for normal-sized text. -->
+            <SolidColorBrush x:Key="AppUserPlacedTextBrush" Color="#FFA78BFA"/>
+
+            <!-- "Matching digit" cell highlight: a dark indigo (distinct from AppAccentBrush,
+                 which is too bright/blue for this) chosen so cell text stays legible on top of
+                 it without needing a color override - white ~13:1, user-placed violet ~4.8:1
+                 (both clear WCAG AA's 4.5:1); error red ~3.3:1 (AA's large-text threshold -
+                 errors always render red per SetCellForeground, so this is the best achievable
+                 without darkening to the point the highlight stops reading as a highlight). -->
+            <SolidColorBrush x:Key="AppHighlightBrush" Color="#FF2E2470"/>
 
             <!-- Night/bat dark theme -->
             <RadialGradientBrush x:Key="NightSkyBrush" Center="0.5,0.25" RadiusX="0.9" RadiusY="0.9">

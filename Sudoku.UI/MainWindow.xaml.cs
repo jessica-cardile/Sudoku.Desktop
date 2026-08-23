@@ -36,6 +36,8 @@ namespace Sudoku.UI
         private readonly Brush _accentBrush;
         private readonly Brush _accentTextBrush;
         private readonly Brush _cellBorderBrush;
+        private readonly Brush _userPlacedTextBrush;
+        private readonly Brush _highlightBrush;
 
         private readonly DispatcherTimer _gameTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         private TimeSpan _elapsed = TimeSpan.Zero;
@@ -61,6 +63,8 @@ namespace Sudoku.UI
             _accentBrush = (Brush)Application.Current.Resources["AppAccentBrush"];
             _accentTextBrush = (Brush)Application.Current.Resources["AppAccentTextBrush"];
             _cellBorderBrush = (Brush)Application.Current.Resources["AppCellBorderBrush"];
+            _userPlacedTextBrush = (Brush)Application.Current.Resources["AppUserPlacedTextBrush"];
+            _highlightBrush = (Brush)Application.Current.Resources["AppHighlightBrush"];
 
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -93,6 +97,11 @@ namespace Sudoku.UI
             _gameTimer.Tick += GameTimer_Tick;
             _gameTimer.Start();
 
+            foreach (var button in NumberPadGrid.Children.OfType<Button>())
+            {
+                button.Translation = new System.Numerics.Vector3(0, 0, 16);
+            }
+
             _isReady = true;
         }
 
@@ -113,8 +122,7 @@ namespace Sudoku.UI
 
             if (IsAccentColorOnTitleBarsEnabled())
             {
-                // The user has explicitly opted into Windows tinting title bars with their
-                // chosen accent color - respect that instead of overriding it with our own.
+                // Use user's custom accent colour on title bars if they have chosen one
                 return;
             }
 
@@ -128,8 +136,9 @@ namespace Sudoku.UI
             titleBar.ForegroundColor = Colors.White;
             titleBar.InactiveForegroundColor = mutedText;
 
-            // Colors.Transparent is not honored here - the system silently falls back to its
-            // own default (white) instead, so match the title bar's own background explicitly.
+            //If the user toggles off the "Show accent colour on title bars and window borders" setting,
+            //the system will ignore any custom button colours and use its own defaults instead.
+            //To ensure that the buttons remain visible and legible, we explicitly set their colours to match the title bar's background and foreground.
             titleBar.ButtonBackgroundColor = darkBackground;
             titleBar.ButtonInactiveBackgroundColor = darkBackground;
             titleBar.ButtonForegroundColor = Colors.White;
@@ -187,7 +196,7 @@ namespace Sudoku.UI
         private void UpdateCellFontSize(double boardSize)
         {
             double cellSize = boardSize / 9;
-            double fontSize = Math.Clamp(cellSize * 0.55, 16, 34);
+            double fontSize = Math.Clamp(cellSize * 0.7, 20, 44);
 
             foreach (var button in _cellButtons)
             {
@@ -217,7 +226,7 @@ namespace Sudoku.UI
                     };
 
                     // Create the clickable cell that displays a digit
-                    var cellButton = new Button
+                    var cellButton = new PointerCursorButton
                     {
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                         VerticalAlignment = VerticalAlignment.Stretch,
@@ -226,7 +235,7 @@ namespace Sudoku.UI
                         Margin = new Thickness(0),
                         Padding = new Thickness(0),
                         FontFamily = new FontFamily("Curlz MT"),
-                        FontSize = 24,
+                        FontSize = 28,
                         BorderThickness = new Thickness(0),
                         CornerRadius = new CornerRadius(0),
                         Background = new SolidColorBrush(Colors.Transparent),
@@ -251,7 +260,7 @@ namespace Sudoku.UI
 
         private void RootGrid_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            // Disarm selection only when the user taps outside the board and sidebar, on the background itself.
+            // Disarm selection only when the user clicks outside the board and sidebar, on the background itself.
             if (ReferenceEquals(e.OriginalSource, RootGrid))
             {
                 DisarmAction();
@@ -281,7 +290,7 @@ namespace Sudoku.UI
             {
                 _armedValue = value;
                 _armedButton = sourceButton;
-                sourceButton.Background = _accentBrush;
+                sourceButton.Background = _highlightBrush;
                 sourceButton.Foreground = _accentTextBrush;
 
                 if (value != 0)
@@ -295,7 +304,7 @@ namespace Sudoku.UI
         {
             if (_armedButton is not null)
             {
-                _armedButton.Background = new SolidColorBrush(Colors.Transparent);
+                _armedButton.ClearValue(Button.BackgroundProperty);
                 _armedButton.Foreground = new SolidColorBrush(Colors.White);
             }
 
@@ -313,10 +322,17 @@ namespace Sudoku.UI
             {
                 if (button.Content as string == digitText)
                 {
-                    button.Background = _accentBrush;
-                    _highlightedCells.Add(button);
+                    HighlightCell(button);
                 }
             }
+        }
+
+        private void HighlightCell(Button button)
+        {
+            // A dedicated (dark) highlight brush, distinct from the button-accent purple, so the
+            // cell's own text color (white/violet/red) stays legible without needing an override.
+            button.Background = _highlightBrush;
+            _highlightedCells.Add(button);
         }
 
         private void ClearMatchingHighlights()
@@ -355,14 +371,13 @@ namespace Sudoku.UI
             }
 
             cellButton.Content = cellViewModel.Value == 0 ? string.Empty : cellViewModel.Value.ToString();
-            cellButton.Foreground = new SolidColorBrush(cellViewModel.IsError ? Colors.Red : Colors.White);
+            SetCellForeground(cellButton, cellViewModel);
 
             // The armed digit/eraser stays selected so the user can place it again without
             // it's only cleared by picking a different one or tapping outside the board.
             if (value != 0 && cellViewModel.Value == value)
             {
-                cellButton.Background = _accentBrush;
-                _highlightedCells.Add(cellButton);
+                HighlightCell(cellButton);
             }
         }
 
@@ -453,8 +468,24 @@ namespace Sudoku.UI
 
                 button.Content = cell.Value == 0 ? string.Empty : cell.Value.ToString();
                 button.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
-                button.Foreground = new SolidColorBrush(Colors.White);
+                SetCellForeground(button, cell);
             }
+        }
+
+        private void SetCellForeground(Button cellButton, CellViewModel cell)
+        {
+            Brush brush = cell.IsGiven
+                ? new SolidColorBrush(Colors.White)
+                : cell.IsError
+                    ? new SolidColorBrush(Colors.Red)
+                    : _userPlacedTextBrush;
+
+            cellButton.Foreground = brush;
+
+            // The default Button style overrides Foreground on pointer-over/pressed via these
+            // theme resource keys, which would otherwise hide the error color on hover/press.
+            cellButton.Resources["ButtonForegroundPointerOver"] = brush;
+            cellButton.Resources["ButtonForegroundPressed"] = brush;
         }
 
         private void ResetTimerAndPauseState()
