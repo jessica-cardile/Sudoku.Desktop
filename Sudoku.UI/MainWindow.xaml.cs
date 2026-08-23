@@ -16,6 +16,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics;
+using Windows.UI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -39,6 +40,8 @@ namespace Sudoku.UI
         private readonly DispatcherTimer _gameTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         private TimeSpan _elapsed = TimeSpan.Zero;
         private bool _isPaused;
+        private bool _isReady;
+        private bool _wasPausedBeforeConfirmDialog;
 
         private readonly List<Button> _cellButtons = new();
         private readonly List<Button> _highlightedCells = new();
@@ -48,6 +51,8 @@ namespace Sudoku.UI
         private Button? _armedButton;
 
         private readonly MainViewModel _viewModel = new();
+
+        private Microsoft.UI.Windowing.AppWindow? _appWindow;
 
         public MainWindow()
         {
@@ -60,6 +65,11 @@ namespace Sudoku.UI
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            _appWindow = appWindow;
+            appWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "title-icon.ico"));
+            ApplyTitleBarColors(appWindow);
+
+            this.Activated += MainWindow_Activated;
 
             var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(windowId, Microsoft.UI.Windowing.DisplayAreaFallback.Primary);
             var workArea = displayArea.WorkArea;
@@ -82,6 +92,65 @@ namespace Sudoku.UI
 
             _gameTimer.Tick += GameTimer_Tick;
             _gameTimer.Start();
+
+            _isReady = true;
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (_appWindow is not null)
+            {
+                ApplyTitleBarColors(_appWindow);
+            }
+        }
+
+        private void ApplyTitleBarColors(Microsoft.UI.Windowing.AppWindow appWindow)
+        {
+            if (!Microsoft.UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
+            {
+                return;
+            }
+
+            if (IsAccentColorOnTitleBarsEnabled())
+            {
+                // The user has explicitly opted into Windows tinting title bars with their
+                // chosen accent color - respect that instead of overriding it with our own.
+                return;
+            }
+
+            var darkBackground = Color.FromArgb(255, 0x1B, 0x1B, 0x24);
+            var accent = ((SolidColorBrush)_accentBrush).Color;
+            var mutedText = ((SolidColorBrush)Application.Current.Resources["AppMutedTextBrush"]).Color;
+
+            var titleBar = appWindow.TitleBar;
+            titleBar.BackgroundColor = darkBackground;
+            titleBar.InactiveBackgroundColor = darkBackground;
+            titleBar.ForegroundColor = Colors.White;
+            titleBar.InactiveForegroundColor = mutedText;
+
+            // Colors.Transparent is not honored here - the system silently falls back to its
+            // own default (white) instead, so match the title bar's own background explicitly.
+            titleBar.ButtonBackgroundColor = darkBackground;
+            titleBar.ButtonInactiveBackgroundColor = darkBackground;
+            titleBar.ButtonForegroundColor = Colors.White;
+            titleBar.ButtonInactiveForegroundColor = mutedText;
+            titleBar.ButtonHoverBackgroundColor = accent;
+            titleBar.ButtonHoverForegroundColor = Colors.White;
+            titleBar.ButtonPressedBackgroundColor = accent;
+            titleBar.ButtonPressedForegroundColor = Colors.White;
+        }
+
+        private static bool IsAccentColorOnTitleBarsEnabled()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+                return key?.GetValue("ColorPrevalence") is int value && value == 1;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void ContentArea_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -284,12 +353,80 @@ namespace Sudoku.UI
 
         private void NewGameButton_Click(object sender, RoutedEventArgs e)
         {
-            var difficulty = (Difficulty)DifficultyComboBox.SelectedIndex;
+            StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
+        }
+
+        private void StartNewGame(Difficulty difficulty)
+        {
             _viewModel.NewGame(difficulty);
 
             DisarmAction();
             ApplyBoardToUi();
             ResetTimerAndPauseState();
+        }
+
+        private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isReady)
+            {
+                return;
+            }
+
+            ShowNewGameConfirmDialog();
+        }
+
+        private void ShowNewGameConfirmDialog()
+        {
+            _wasPausedBeforeConfirmDialog = _isPaused;
+
+            if (!_isPaused)
+            {
+                _gameTimer.Stop();
+            }
+
+            DifficultyComboBox.IsEnabled = false;
+            NewGameButton.IsEnabled = false;
+            SetSidebarButtonsEnabled(false);
+
+            NewGameConfirmOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void HideNewGameConfirmDialogChrome()
+        {
+            NewGameConfirmOverlay.Visibility = Visibility.Collapsed;
+
+            DifficultyComboBox.IsEnabled = true;
+            NewGameButton.IsEnabled = true;
+            SetSidebarButtonsEnabled(true);
+        }
+
+        private void SetSidebarButtonsEnabled(bool isEnabled)
+        {
+            foreach (var button in NumberPadGrid.Children.OfType<Button>())
+            {
+                button.IsEnabled = isEnabled;
+            }
+
+            EraseButton.IsEnabled = isEnabled;
+            HintButton.IsEnabled = isEnabled;
+            PauseButton.IsEnabled = isEnabled;
+            SettingsButton.IsEnabled = isEnabled;
+        }
+
+        private void NewGameConfirmYesButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideNewGameConfirmDialogChrome();
+            StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
+        }
+
+        private void NewGameConfirmNoButton_Click(object sender, RoutedEventArgs e)
+        {
+            HideNewGameConfirmDialogChrome();
+
+            if (!_wasPausedBeforeConfirmDialog)
+            {
+                _gameTimer.Start();
+            }
         }
 
         private void ApplyBoardToUi()

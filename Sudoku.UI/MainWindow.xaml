@@ -78,7 +78,8 @@
                               Height="52"
                               FontFamily="Curlz MT"
                               FontSize="20"
-                              SelectedIndex="1">
+                              SelectedIndex="1"
+                              SelectionChanged="DifficultyComboBox_SelectionChanged">
                         <ComboBoxItem Content="Easy"/>
                         <ComboBoxItem Content="Medium"/>
                         <ComboBoxItem Content="Hard"/>
@@ -155,6 +156,47 @@
                                            Foreground="White"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- New game confirmation overlay: shown when the difficulty is changed -->
+                            <Border x:Name="NewGameConfirmOverlay"
+                                    Visibility="Collapsed"
+                                    CornerRadius="12"
+                                    Background="#FF1B1B24">
+                                <StackPanel HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Spacing="20">
+                                    <TextBlock Text="Start New Game?"
+                                               FontFamily="Curlz MT"
+                                               FontSize="40"
+                                               FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center"
+                                                Spacing="16">
+                                        <Button x:Name="NewGameConfirmYesButton"
+                                                Content="Yes"
+                                                Click="NewGameConfirmYesButton_Click"
+                                                Padding="28,8"
+                                                FontFamily="Curlz MT"
+                                                FontSize="20"
+                                                FontWeight="SemiBold"
+                                                Background="{StaticResource AppAccentBrush}"
+                                                Foreground="{StaticResource AppAccentTextBrush}"/>
+                                        <Button x:Name="NewGameConfirmNoButton"
+                                                Content="No"
+                                                Click="NewGameConfirmNoButton_Click"
+                                                Padding="28,8"
+                                                FontFamily="Curlz MT"
+                                                FontSize="20"
+                                                FontWeight="SemiBold"
+                                                Background="Transparent"
+                                                BorderBrush="{StaticResource AppAccentBrush}"
+                                                BorderThickness="1.5"
+                                                Foreground="White"/>
+                                    </StackPanel>
+                                </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
