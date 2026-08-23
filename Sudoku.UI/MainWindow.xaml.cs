@@ -249,6 +249,15 @@ namespace Sudoku.UI
             }
         }
 
+        private void RootGrid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            // Disarm selection only when the user taps outside the board and sidebar, on the background itself.
+            if (ReferenceEquals(e.OriginalSource, RootGrid))
+            {
+                DisarmAction();
+            }
+        }
+
         private void NumberPad_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is string digitText && int.TryParse(digitText, out int digit))
@@ -348,7 +357,13 @@ namespace Sudoku.UI
             cellButton.Content = cellViewModel.Value == 0 ? string.Empty : cellViewModel.Value.ToString();
             cellButton.Foreground = new SolidColorBrush(cellViewModel.IsError ? Colors.Red : Colors.White);
 
-            DisarmAction();
+            // The armed digit/eraser stays selected so the user can place it again without
+            // it's only cleared by picking a different one or tapping outside the board.
+            if (value != 0 && cellViewModel.Value == value)
+            {
+                cellButton.Background = _accentBrush;
+                _highlightedCells.Add(cellButton);
+            }
         }
 
         private void NewGameButton_Click(object sender, RoutedEventArgs e)

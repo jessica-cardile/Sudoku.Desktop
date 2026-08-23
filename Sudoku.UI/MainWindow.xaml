@@ -7,7 +7,7 @@
     mc:Ignorable="d"
     Title="Sudoku">
 
-    <Grid Padding="24">
+    <Grid x:Name="RootGrid" Padding="24" Tapped="RootGrid_Tapped">
         <Grid.Background>
             <ImageBrush ImageSource="Assets/app-dark-background.png" Stretch="UniformToFill"/>
         </Grid.Background>
