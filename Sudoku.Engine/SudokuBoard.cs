@@ -47,6 +47,9 @@ namespace Sudoku.Engine
             throw new InvalidOperationException($"Cell at Row {targetRow}, Column {targetColumn} does not exist inside the board collection.");
         }
 
+        //Maps a row/column pair to its containing 3x3 box index (0-8, left-to-right, top-to-bottom).
+        private static int GetBoxIndex(int row, int column) => (row / 3) * 3 + (column / 3);
+
         public bool isRowValid(int rowIndex)
         {
             if(rowIndex < 0 || rowIndex > 8)
@@ -54,29 +57,10 @@ namespace Sudoku.Engine
                 throw new ArgumentOutOfRangeException(nameof(rowIndex), "Row index must be between 0 and 8.");
             }
 
-            //Get all the 9 cells belonging to the specified row 
+            //Get all the 9 cells belonging to the specified row
             var rowCells = Cells.Where(c => c.Row == rowIndex);
 
-            //create a HashSet to track the numbers we have in this row
-            var existingNumbers = new HashSet<int>();
-
-            foreach (var cell in rowCells)
-            {
-                //skip if cell is empty
-                if(cell.Value == 0)
-                {
-                    continue;
-                }
-
-                //Try adding the number to the HashSet, will return false if the number already exists
-                bool isUnique = existingNumbers.Add(cell.Value);
-
-                if(!isUnique)
-                { 
-                    return false; //we have a duplicate!
-                }
-            }
-            return true; //no duplicates found, row is valid
+            return AreCellsValid(rowCells);
         }
 
         public bool isColumnValid(int columnIndex)
@@ -87,23 +71,7 @@ namespace Sudoku.Engine
             }
             var  columnsCells = Cells.Where(c => c.Column == columnIndex);
 
-            var existingNumbers = new HashSet<int>();
-
-            foreach(var cell in columnsCells)
-            {
-                if(cell.Value == 0)
-                {
-                    continue;
-                }
-
-                bool isUnique = existingNumbers.Add(cell.Value);
-
-                if(!isUnique)
-                {
-                    return false; //we have a duplicate!
-                }
-            }
-            return true; //no duplicates found, column is valid
+            return AreCellsValid(columnsCells);
         }
 
         public bool isBoxValid(int boxIndex)
@@ -119,26 +87,36 @@ namespace Sudoku.Engine
 
             //Find the 9 cells inside a specific box boundary
             var boxCells = Cells.Where
-            (c => c.Row >= startRow && c.Row < startRow + 3 
+            (c => c.Row >= startRow && c.Row < startRow + 3
             && c.Column >= startColumn && c.Column < startColumn + 3);
 
+            return AreCellsValid(boxCells);
+        }
+
+        //Shared duplicate-check used by isRowValid/isColumnValid/isBoxValid:
+        //a group of 9 cells is valid as long as no non-empty value repeats within it.
+        private static bool AreCellsValid(IEnumerable<Cell> cells)
+        {
+            //create a HashSet to track the numbers we have seen in this group
             var existingNumbers = new HashSet<int>();
 
-            foreach(var cell in boxCells)
+            foreach (var cell in cells)
             {
-                if(cell.Value == 0)
+                //skip if cell is empty
+                if (cell.Value == 0)
                 {
                     continue;
                 }
 
+                //Try adding the number to the HashSet, will return false if the number already exists
                 bool isUnique = existingNumbers.Add(cell.Value);
 
                 if (!isUnique)
                 {
-                    return false;
+                    return false; //we have a duplicate!
                 }
             }
-            return true;
+            return true; //no duplicates found, group is valid
         }
 
         public bool IsBoardValid()
@@ -176,7 +154,7 @@ namespace Sudoku.Engine
             foreach (int num in numberSequence)
             {
                 //find where cell is in the board
-                int boxIndex = (nextEmptyCell.Row / 3) * 3 + (nextEmptyCell.Column / 3);
+                int boxIndex = GetBoxIndex(nextEmptyCell.Row, nextEmptyCell.Column);
 
                 //try to place number
                 nextEmptyCell.Value = num;
@@ -216,7 +194,7 @@ namespace Sudoku.Engine
             {
                 nextEmptyCell.Value = num;
 
-                int boxIndex = (nextEmptyCell.Row / 3) * 3 + (nextEmptyCell.Column / 3);
+                int boxIndex = GetBoxIndex(nextEmptyCell.Row, nextEmptyCell.Column);
 
                 if (isRowValid(nextEmptyCell.Row) &&
                     isColumnValid(nextEmptyCell.Column) &&

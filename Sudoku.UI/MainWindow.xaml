@@ -34,6 +34,17 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style x:Key="SidebarActionButtonStyle" TargetType="Button">
+                <Setter Property="Padding" Value="0,10"/>
+                <Setter Property="FontFamily" Value="Chiller"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="{StaticResource AppAccentBrush}"/>
+                <Setter Property="BorderThickness" Value="1.5"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Style>
         </Grid.Resources>
 
         <!-- Header + board + sidebar share one column grid so the header controls
@@ -283,53 +294,26 @@
                         <local:PointerCursorButton x:Name="EraseButton" Grid.Column="0"
                                 Content="Erase"
                                 Click="EraseButton_Click"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                Padding="0,10"
-                                FontFamily="Chiller"
-                                Background="Transparent"
-                                BorderBrush="{StaticResource AppAccentBrush}"
-                                BorderThickness="1.5"
-                                Foreground="White"/>
+                                Style="{StaticResource SidebarActionButtonStyle}"/>
 
                         <local:PointerCursorButton x:Name="HintButton" Grid.Column="1"
                                 Content="Hint"
                                 Click="HintButton_Click"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                Padding="0,10"
-                                FontFamily="Chiller"
+                                Style="{StaticResource SidebarActionButtonStyle}"
                                 FontWeight="SemiBold"
-                                Background="Transparent"
-                                BorderBrush="{StaticResource AppAccentBrush}"
-                                BorderThickness="1.5"
                                 Foreground="{StaticResource AppAccentTextBrush}"/>
 
                         <local:PointerCursorButton x:Name="PauseButton" Grid.Column="2"
                                 Content="Pause"
                                 Click="PauseButton_Click"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                Padding="0,10"
-                                FontFamily="Chiller"
-                                Background="Transparent"
-                                BorderBrush="{StaticResource AppAccentBrush}"
-                                BorderThickness="1.5"
-                                Foreground="White"/>
+                                Style="{StaticResource SidebarActionButtonStyle}"/>
                     </Grid>
 
                     <!-- Settings -->
                     <local:PointerCursorButton x:Name="SettingsButton"
                             Content="Settings"
                             Click="SettingsButton_Click"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center"
-                            Padding="0,10"
-                            FontFamily="Chiller"
-                            Background="Transparent"
-                            BorderBrush="{StaticResource AppAccentBrush}"
-                            BorderThickness="1.5"
-                            Foreground="White"/>
+                            Style="{StaticResource SidebarActionButtonStyle}"/>
 
                 </StackPanel>
             </Grid>

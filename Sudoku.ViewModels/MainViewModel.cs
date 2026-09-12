@@ -87,19 +87,32 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Returns the engine-side cell paired with the current SelectedCell, or null if there is
+    /// no selection or the selection is a fixed starting clue that can't be edited.
+    /// </summary>
+    private Cell? GetEditableEngineCell()
+    {
+        if (SelectedCell == null || SelectedCell.IsGiven)
+        {
+            return null;
+        }
+
+        return _engineBoard.GetCell(SelectedCell.Row, SelectedCell.Column);
+    }
+
+    /// <summary>
     /// Inputs a number (1-9) into the currently selected cell.
     /// </summary>
     [RelayCommand]
     public void InputNumber(int number)
     {
-        //don't modify fixed starting clues or empty selections
-        if (SelectedCell == null || SelectedCell.IsGiven)
+        var engineCell = GetEditableEngineCell();
+        if (engineCell == null)
         {
             return;
         }
 
-        SelectedCell.Value = number;
-        var engineCell = _engineBoard.GetCell(SelectedCell.Row, SelectedCell.Column);
+        SelectedCell!.Value = number;
         engineCell.Value = number;
         SelectedCell.IsError = number != _engineBoard.GetSolutionValue(SelectedCell.Row, SelectedCell.Column);
         CheckGameCompletion();
@@ -111,15 +124,14 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void ClearSelectedCell()
     {
-        if ( (SelectedCell == null || SelectedCell.IsGiven))
+        var engineCell = GetEditableEngineCell();
+        if (engineCell == null)
         {
             return;
         }
 
-        SelectedCell.Value = 0;
+        SelectedCell!.Value = 0;
         SelectedCell.IsError = false;
-
-        var engineCell = _engineBoard.GetCell(SelectedCell.Row, SelectedCell.Column);
         engineCell.Value = 0;
 
         StatusMessage = $"Cleared cell ({SelectedCell.Row + 1}, {SelectedCell.Column + 1})";

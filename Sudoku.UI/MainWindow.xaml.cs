@@ -47,6 +47,8 @@ namespace Sudoku.UI
 
         private readonly List<Button> _cellButtons = new();
         private readonly List<Button> _highlightedCells = new();
+        private readonly List<Button> _numberPadButtons = new();
+        private readonly List<Button> _actionButtons;
 
         // The digit (1-9) or eraser (0) currently armed from the sidebar, awaiting a cell click.
         private int? _armedValue;
@@ -59,6 +61,8 @@ namespace Sudoku.UI
         public MainWindow()
         {
             this.InitializeComponent();
+
+            _actionButtons = new List<Button> { EraseButton, HintButton, PauseButton, SettingsButton };
 
             _accentBrush = (Brush)Application.Current.Resources["AppAccentBrush"];
             _accentTextBrush = (Brush)Application.Current.Resources["AppAccentTextBrush"];
@@ -97,7 +101,9 @@ namespace Sudoku.UI
             _gameTimer.Tick += GameTimer_Tick;
             _gameTimer.Start();
 
-            foreach (var button in NumberPadGrid.Children.OfType<Button>())
+            _numberPadButtons.AddRange(NumberPadGrid.Children.OfType<Button>());
+
+            foreach (var button in _numberPadButtons)
             {
                 button.Translation = new System.Numerics.Vector3(0, 0, 16);
             }
@@ -183,14 +189,17 @@ namespace Sudoku.UI
             SidebarPanel.Width = Math.Clamp(MinSidebarWidth * clamped, MinSidebarWidth, MaxSidebarWidth);
             TimerText.FontSize = 24 * clamped;
 
-            foreach (var btn in NumberPadGrid.Children.OfType<Button>())
+            foreach (var btn in _numberPadButtons)
             {
                 btn.FontSize = 16 * clamped;
                 btn.Height = 48 * clamped;
             }
 
-            EraseButton.FontSize = HintButton.FontSize = PauseButton.FontSize = SettingsButton.FontSize = 14 * clamped;
-            EraseButton.Height = HintButton.Height = PauseButton.Height = SettingsButton.Height = 44 * clamped;
+            foreach (var btn in _actionButtons)
+            {
+                btn.FontSize = 14 * clamped;
+                btn.Height = 44 * clamped;
+            }
         }
 
         private void UpdateCellFontSize(double boardSize)
@@ -370,8 +379,7 @@ namespace Sudoku.UI
                 _viewModel.InputNumber(value);
             }
 
-            cellButton.Content = cellViewModel.Value == 0 ? string.Empty : cellViewModel.Value.ToString();
-            SetCellForeground(cellButton, cellViewModel);
+            RenderCell(cellButton, cellViewModel);
 
             // The armed digit/eraser stays selected so the user can place it again without
             // it's only cleared by picking a different one or tapping outside the board.
@@ -432,15 +440,15 @@ namespace Sudoku.UI
 
         private void SetSidebarButtonsEnabled(bool isEnabled)
         {
-            foreach (var button in NumberPadGrid.Children.OfType<Button>())
+            foreach (var button in _numberPadButtons)
             {
                 button.IsEnabled = isEnabled;
             }
 
-            EraseButton.IsEnabled = isEnabled;
-            HintButton.IsEnabled = isEnabled;
-            PauseButton.IsEnabled = isEnabled;
-            SettingsButton.IsEnabled = isEnabled;
+            foreach (var button in _actionButtons)
+            {
+                button.IsEnabled = isEnabled;
+            }
         }
 
         private void NewGameConfirmYesButton_Click(object sender, RoutedEventArgs e)
@@ -466,10 +474,15 @@ namespace Sudoku.UI
                 var cell = _viewModel.Board[i];
                 var button = _cellButtons[i];
 
-                button.Content = cell.Value == 0 ? string.Empty : cell.Value.ToString();
-                button.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
-                SetCellForeground(button, cell);
+                RenderCell(button, cell);
             }
+        }
+
+        private void RenderCell(Button button, CellViewModel cell)
+        {
+            button.Content = cell.Value == 0 ? string.Empty : cell.Value.ToString();
+            button.FontWeight = cell.IsGiven ? FontWeights.Bold : FontWeights.Normal;
+            SetCellForeground(button, cell);
         }
 
         private void SetCellForeground(Button cellButton, CellViewModel cell)
@@ -493,11 +506,7 @@ namespace Sudoku.UI
             _elapsed = TimeSpan.Zero;
             TimerText.Text = "00:00";
 
-            _isPaused = false;
-            PauseButton.Content = "Pause";
-            PauseOverlay.Visibility = Visibility.Collapsed;
-
-            _gameTimer.Start();
+            SetPaused(false);
         }
 
         private void HintButton_Click(object sender, RoutedEventArgs e)
@@ -507,7 +516,12 @@ namespace Sudoku.UI
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            _isPaused = !_isPaused;
+            SetPaused(!_isPaused);
+        }
+
+        private void SetPaused(bool paused)
+        {
+            _isPaused = paused;
 
             if (_isPaused)
             {
