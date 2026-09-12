@@ -10,6 +10,7 @@ using Microsoft.UI.Text;
 using Sudoku.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -44,6 +45,9 @@ namespace Sudoku.UI
         private bool _isPaused;
         private bool _isReady;
         private bool _wasPausedBeforeConfirmDialog;
+
+        private readonly DispatcherTimer _hintPulseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(30) };
+        private double _hintPulsePhase;
 
         private readonly List<Button> _cellButtons = new();
         private readonly List<Button> _highlightedCells = new();
@@ -107,6 +111,10 @@ namespace Sudoku.UI
             {
                 button.Translation = new System.Numerics.Vector3(0, 0, 16);
             }
+
+            _hintPulseTimer.Tick += HintPulseTimer_Tick;
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            SetHintPulseActive(_viewModel.IsHintAvailable);
 
             _isReady = true;
         }
@@ -446,8 +454,8 @@ namespace Sudoku.UI
             }
 
             foreach (var button in _actionButtons)
-            {
-                button.IsEnabled = isEnabled;
+            {           
+                button.IsEnabled = button == HintButton ? isEnabled && _viewModel.IsHintAvailable : isEnabled;
             }
         }
 
@@ -496,7 +504,7 @@ namespace Sudoku.UI
             cellButton.Foreground = brush;
 
             // The default Button style overrides Foreground on pointer-over/pressed via these
-            // theme resource keys, which would otherwise hide the error color on hover/press.
+            // theme resource keys, which would otherwise hide the error colour on hover/press.
             cellButton.Resources["ButtonForegroundPointerOver"] = brush;
             cellButton.Resources["ButtonForegroundPressed"] = brush;
         }
@@ -511,7 +519,43 @@ namespace Sudoku.UI
 
         private void HintButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: reveal a hint for the selected cell.
+            _viewModel.UseHint();
+
+            if (_viewModel.SelectedCell is CellViewModel cell)
+            {
+                int index = cell.Row * 9 + cell.Column;
+                RenderCell(_cellButtons[index], cell);
+            }
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainViewModel.IsHintAvailable))
+            {
+                SetHintPulseActive(_viewModel.IsHintAvailable);
+            }
+        }
+
+        private void SetHintPulseActive(bool active)
+        {
+            HintButton.IsEnabled = active;
+
+            if (active)
+            {
+                _hintPulsePhase = 0;
+                _hintPulseTimer.Start();
+            }
+            else
+            {
+                _hintPulseTimer.Stop();
+                HintGlow.Opacity = 0;
+            }
+        }
+
+        private void HintPulseTimer_Tick(object? sender, object e)
+        {
+            _hintPulsePhase += 0.15;
+            HintGlow.Opacity = 0.55 + (Math.Sin(_hintPulsePhase) * 0.35); // oscillates ~0.2 -> 0.9
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)

@@ -295,6 +295,12 @@
                                 Content="Erase"
                                 Click="EraseButton_Click"
                                 Style="{StaticResource SidebarActionButtonStyle}"/>
+                        <Grid x:Name="HintGlow" Grid.Column="1" Opacity="0" IsHitTestVisible="False">
+                            <!-- White glow filling the gap right up to the button's own edge -->
+                            <Border Margin="-5" CornerRadius="7" BorderBrush="White" BorderThickness="5"/>
+                            <!-- Thin accent rim capping the outer edge of the glow -->
+                            <Border Margin="-6" CornerRadius="8" BorderBrush="{StaticResource AppAccentBrush}" BorderThickness="1.5"/>
+                        </Grid>
 
                         <local:PointerCursorButton x:Name="HintButton" Grid.Column="1"
                                 Content="Hint"

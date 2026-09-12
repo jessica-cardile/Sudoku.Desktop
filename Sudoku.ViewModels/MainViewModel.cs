@@ -26,6 +26,13 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial string StatusMessage { get; set; } = "Select a cell to begin";
 
+    /// <summary>
+    /// True exactly when the selected cell currently holds a wrong placement, i.e. a hint
+    /// would have something useful to fix.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsHintAvailable { get; set; }
+
     public MainViewModel()
     {
         NewGame(Difficulty.Medium);
@@ -75,6 +82,9 @@ public partial class MainViewModel : ObservableObject
         {
             newValue.IsSelected = true;
         }
+
+        //Hint is only available while the newly selected cell holds a wrong placement.
+        IsHintAvailable = newValue?.IsError == true;
     }
 
     /// <summary>
@@ -115,6 +125,7 @@ public partial class MainViewModel : ObservableObject
         SelectedCell!.Value = number;
         engineCell.Value = number;
         SelectedCell.IsError = number != _engineBoard.GetSolutionValue(SelectedCell.Row, SelectedCell.Column);
+        IsHintAvailable = SelectedCell.IsError;
         CheckGameCompletion();
     }
 
@@ -132,9 +143,36 @@ public partial class MainViewModel : ObservableObject
 
         SelectedCell!.Value = 0;
         SelectedCell.IsError = false;
+        IsHintAvailable = false;
         engineCell.Value = 0;
 
         StatusMessage = $"Cleared cell ({SelectedCell.Row + 1}, {SelectedCell.Column + 1})";
+    }
+
+    /// <summary>
+    /// Reveals the correct value for the selected cell and locks it, like a starting clue.
+    /// </summary>
+    [RelayCommand]
+    public void UseHint()
+    {
+        var engineCell = GetEditableEngineCell();
+        if (engineCell == null)
+        {
+            StatusMessage = "Select an empty cell to get a hint.";
+            return;
+        }
+
+        int correctValue = _engineBoard.GetSolutionValue(SelectedCell!.Row, SelectedCell.Column);
+
+        SelectedCell.Value = correctValue;
+        SelectedCell.IsError = false;
+        SelectedCell.IsGiven = true;
+        IsHintAvailable = false;
+
+        engineCell.Value = correctValue;
+        engineCell.isStartingClue = true;
+
+        CheckGameCompletion();
     }
 
     /// <summary>
