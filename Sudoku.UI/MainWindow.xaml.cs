@@ -324,6 +324,8 @@ namespace Sudoku.UI
                     HighlightMatchingCells(value);
                 }
             }
+
+            UpdateCellCursors();
         }
 
         private void DisarmAction()
@@ -338,6 +340,21 @@ namespace Sudoku.UI
             _armedValue = null;
 
             ClearMatchingHighlights();
+            UpdateCellCursors();
+        }
+
+        // While erase mode is armed, editable cells show the eraser cursor; given cells can't be erased so keep the hand.
+        private void UpdateCellCursors()
+        {
+            bool eraserArmed = _armedValue == 0;
+
+            for (int i = 0; i < _cellButtons.Count; i++)
+            {
+                if (_cellButtons[i] is PointerCursorButton cellButton)
+                {
+                    cellButton.SetEraserCursor(eraserArmed && !_viewModel.Board[i].IsGiven);
+                }
+            }
         }
 
         private void HighlightMatchingCells(int digit)
@@ -573,6 +590,7 @@ namespace Sudoku.UI
                 int index = cell.Row * 9 + cell.Column;
                 RenderCell(_cellButtons[index], cell);
                 UpdateNumberPadAvailability();
+                UpdateCellCursors();
             }
         }
 
