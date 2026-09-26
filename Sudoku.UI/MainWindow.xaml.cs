@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Text;
+using Sudoku.UI.Services;
 using Sudoku.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,7 @@ namespace Sudoku.UI
         private const double MaxBoardSize = 700;
         private const double MinSidebarWidth = 200;
         private const double MaxSidebarWidth = 320;
+        private const int MaxLimitedHints = 3;
 
         private readonly Brush _accentBrush;
         private readonly Brush _accentTextBrush;
@@ -45,6 +47,8 @@ namespace Sudoku.UI
         private bool _isPaused;
         private bool _isReady;
         private bool _wasPausedBeforeConfirmDialog;
+        private bool _wasPausedBeforeSettingsDialog;
+        private int _hintsUsed;
 
         private readonly DispatcherTimer _hintPulseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(30) };
         private double _hintPulsePhase;
@@ -114,7 +118,12 @@ namespace Sudoku.UI
 
             _hintPulseTimer.Tick += HintPulseTimer_Tick;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-            SetHintPulseActive(_viewModel.IsHintAvailable);
+            SetHintPulseActive(CanUseHint());
+
+            DisplayTimerToggle.IsOn = AppSettings.DisplayTimer;
+            ApplyDisplayTimerVisibility(DisplayTimerToggle.IsOn);
+
+            LimitedHintsToggle.IsOn = AppSettings.LimitedHints;
 
             _isReady = true;
         }
@@ -409,6 +418,7 @@ namespace Sudoku.UI
             DisarmAction();
             ApplyBoardToUi();
             ResetTimerAndPauseState();
+            _hintsUsed = 0;
         }
 
         private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -455,7 +465,7 @@ namespace Sudoku.UI
 
             foreach (var button in _actionButtons)
             {           
-                button.IsEnabled = button == HintButton ? isEnabled && _viewModel.IsHintAvailable : isEnabled;
+                button.IsEnabled = button == HintButton ? isEnabled && CanUseHint() : isEnabled;
             }
         }
 
@@ -519,6 +529,13 @@ namespace Sudoku.UI
 
         private void HintButton_Click(object sender, RoutedEventArgs e)
         {
+            // IsHintAvailable is only ever true when there's an editable cell to reveal, so this
+            // is a genuine use of the hint, not just a no-op click.
+            if (_viewModel.IsHintAvailable)
+            {
+                _hintsUsed++;
+            }
+
             _viewModel.UseHint();
 
             if (_viewModel.SelectedCell is CellViewModel cell)
@@ -528,11 +545,24 @@ namespace Sudoku.UI
             }
         }
 
+        /// <summary>
+        /// Whether a hint can currently be given: the selected cell has to hold a wrong
+        /// placement, and - when the Limited Hints setting is on - the per-game cap must not
+        /// already be used up.
+        /// </summary>
+        private bool CanUseHint() =>
+            _viewModel.IsHintAvailable && (!AppSettings.LimitedHints || _hintsUsed < MaxLimitedHints);
+
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MainViewModel.IsHintAvailable))
             {
-                SetHintPulseActive(_viewModel.IsHintAvailable);
+                SetHintPulseActive(CanUseHint());
+            }
+
+            if (e.PropertyName == nameof(MainViewModel.IsSolved) && _viewModel.IsSolved)
+            {
+                ShowWinOverlay();
             }
         }
 
@@ -581,9 +611,82 @@ namespace Sudoku.UI
             }
         }
 
+        // TODO(debug): remove this handler along with the DebugTriggerWinButton in
+        // MainWindow.xaml once the win animation is confirmed working.
+        private void DebugTriggerWinButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWinOverlay();
+        }
+
+        private void ShowWinOverlay()
+        {
+            _gameTimer.Stop();
+            WinOverlay.Visibility = Visibility.Visible;
+            SetSidebarButtonsEnabled(false);
+        }
+
+        private void CloseWinOverlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            WinOverlay.Visibility = Visibility.Collapsed;
+            SetSidebarButtonsEnabled(true);
+        }
+
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: open the settings panel.
+            _wasPausedBeforeSettingsDialog = _isPaused;
+
+            if (!_isPaused)
+            {
+                _gameTimer.Stop();
+            }
+
+            SettingsOverlay.Visibility = Visibility.Visible;
+            SetSidebarButtonsEnabled(false);
+        }
+
+        private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsOverlay.Visibility = Visibility.Collapsed;
+            SetSidebarButtonsEnabled(true);
+
+            if (!_wasPausedBeforeSettingsDialog)
+            {
+                _gameTimer.Start();
+            }
+        }
+
+        private void DisplayTimerToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isReady)
+            {
+                return;
+            }
+
+            bool isOn = DisplayTimerToggle.IsOn;
+            AppSettings.DisplayTimer = isOn;
+            ApplyDisplayTimerVisibility(isOn);
+        }
+
+        private void ApplyDisplayTimerVisibility(bool isOn)
+        {
+            // The Timer card itself stays put; only the ticking value swaps for a
+            // placeholder image so the sidebar layout doesn't shift.
+            TimerValuePanel.Visibility = isOn ? Visibility.Visible : Visibility.Collapsed;
+            TimerHiddenPlaceholder.Visibility = isOn ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void LimitedHintsToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isReady)
+            {
+                return;
+            }
+
+            AppSettings.LimitedHints = LimitedHintsToggle.IsOn;
+
+            // Re-evaluate immediately: toggling this can enable/disable the Hint button right
+            // away even mid-game, without waiting for the selected cell to change.
+            SetHintPulseActive(CanUseHint());
         }
 
         private void GameTimer_Tick(object? sender, object e)

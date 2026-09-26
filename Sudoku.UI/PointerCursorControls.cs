@@ -7,7 +7,7 @@ namespace Sudoku.UI
     // this WinAppSDK version has no public UIElement.ChangeCursor API to do it from outside a control's own code.
     public sealed class PointerCursorButton : Button
     {
-        public PointerCursorButton()
+        public PointerCursorButton() 
         {
             ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
         }
@@ -16,8 +16,8 @@ namespace Sudoku.UI
     public sealed class PointerCursorComboBox : ComboBox
     {
         public PointerCursorComboBox()
-        {
+        { 
             ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
         }
     }
-}
+} 

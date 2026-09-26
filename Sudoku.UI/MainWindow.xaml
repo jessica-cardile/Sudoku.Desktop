@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:Sudoku.UI"
+    xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
     mc:Ignorable="d"
     Title="Sudoku">
 
@@ -176,6 +177,34 @@
                                            VerticalAlignment="Center"/>
                             </Border>
 
+                            <!-- Win overlay: celebrates a solved puzzle with a Lottie animation -->
+                            <Border x:Name="WinOverlay"
+                                    Visibility="Collapsed"
+                                    CornerRadius="12"
+                                    Background="#FF1B1B24">
+                                <Grid>
+                                    <AnimatedVisualPlayer x:Name="WinAnimationPlayer"
+                                                          AutoPlay="True"
+                                                          Stretch="UniformToFill"
+                                                          HorizontalAlignment="Stretch"
+                                                          VerticalAlignment="Stretch">
+                                        <lottie:LottieVisualSource UriSource="ms-appx:///Assets/Animations/you-win.json"/>
+                                    </AnimatedVisualPlayer>
+                                    <local:PointerCursorButton x:Name="CloseWinOverlayButton"
+                                            Content="Nice!"
+                                            Click="CloseWinOverlayButton_Click"
+                                            Padding="28,8"
+                                            FontFamily="Curlz MT"
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Bottom"
+                                            Margin="0,0,0,24"
+                                            Background="{StaticResource AppAccentBrush}"
+                                            Foreground="{StaticResource AppAccentTextBrush}"/>
+                                </Grid>
+                            </Border>
+
                             <!-- New game confirmation overlay: shown when the difficulty is changed -->
                             <Border x:Name="NewGameConfirmOverlay"
                                     Visibility="Collapsed"
@@ -216,6 +245,106 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
+
+                            <!-- Settings overlay: only covers the board, like PauseOverlay and
+                                 NewGameConfirmOverlay above - there aren't enough settings yet
+                                 to warrant taking over the whole window. -->
+                            <Border x:Name="SettingsOverlay"
+                                    Visibility="Collapsed"
+                                    CornerRadius="12"
+                                    Background="#FF1B1B24">
+                                <Grid>
+                                    <!-- Image is painted as a Border background brush, not a raw
+                                         Image element, so it's always clipped to this rounded
+                                         rect and can never overflow the card regardless of the
+                                         source image's own size/aspect ratio. -->
+                                    <Border CornerRadius="12">
+                                        <Border.Background>
+                                            <ImageBrush ImageSource="Assets/background-settings.png" Stretch="UniformToFill"/>
+                                        </Border.Background>
+                                    </Border>
+
+                                    <!-- Title (row 0) and Close (row 2) share this Grid's middle Auto
+                                         column, flanked by two equal "*" columns - that's what pins
+                                         Close's left edge to the same X as the "S" in "Settings",
+                                         regardless of window/board size. The toggle rows (row 1) just
+                                         span across all three columns as their own independent block. -->
+                                    <Grid Width="320"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RowSpacing="24">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                                   Text="Settings"
+                                                   FontFamily="Curlz MT"
+                                                   FontSize="56"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"/>
+
+                                        <!-- Settings list: one row per setting (label + control).
+                                             Append more rows here as more settings are added. -->
+                                        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                              ColumnSpacing="24"
+                                              RowSpacing="20">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                                       Text="Display Timer"
+                                                       FontFamily="Chiller"
+                                                       FontSize="32"
+                                                       Foreground="White"
+                                                       VerticalAlignment="Center"/>
+                                            <ToggleSwitch x:Name="DisplayTimerToggle"
+                                                          Grid.Row="0" Grid.Column="1"
+                                                          OnContent=""
+                                                          OffContent=""
+                                                          Toggled="DisplayTimerToggle_Toggled"/>
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                                       Text="Limited Hints"
+                                                       FontFamily="Chiller"
+                                                       FontSize="32"
+                                                       Foreground="White"
+                                                       VerticalAlignment="Center"/>
+                                            <ToggleSwitch x:Name="LimitedHintsToggle"
+                                                          Grid.Row="1" Grid.Column="1"
+                                                          OnContent=""
+                                                          OffContent=""
+                                                          Toggled="LimitedHintsToggle_Toggled"/>
+                                        </Grid>
+
+                                        <local:PointerCursorButton x:Name="CloseSettingsButton"
+                                                Grid.Row="2" Grid.Column="1"
+                                                HorizontalAlignment="Left"
+                                                Content="Close"
+                                                Click="CloseSettingsButton_Click"
+                                                CornerRadius="8"
+                                                Padding="16,4"
+                                                FontFamily="Curlz MT"
+                                                FontSize="18"
+                                                FontWeight="SemiBold"
+                                                Background="{StaticResource AppAccentBrush}"
+                                                Foreground="{StaticResource AppAccentTextBrush}"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>
@@ -229,14 +358,15 @@
                             Spacing="20">
 
                     <!-- Timer -->
-                    <Border CornerRadius="16"
+                    <Border x:Name="TimerCard"
+                            CornerRadius="16"
                             Padding="4"
                             HorizontalAlignment="Center"
                             Background="#334B3DE0"
                             BorderBrush="{StaticResource AppAccentBrush}"
                             BorderThickness="1.5">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                            <StackPanel Spacing="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel x:Name="TimerValuePanel" Spacing="4" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="TIME"
                                            FontFamily="Chiller"
                                            FontWeight="SemiBold"
@@ -252,6 +382,20 @@
                                            TextAlignment="Center"
                                            HorizontalAlignment="Center"/>
                             </StackPanel>
+                            <!-- Shown instead of TimerValuePanel when the Display Timer setting is off. -->
+                            <Border x:Name="TimerHiddenPlaceholder"
+                                    Visibility="Collapsed"
+                                    Width="130"
+                                    Height="56"
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <Image x:Name="TimerHiddenImage"
+                                       Source="Assets/bat-upsidedown.png"
+                                       Stretch="Uniform"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                            </Border>
                             <Image x:Name="TimerMoonIcon"
                                    Source="Assets/half-moon-icon.png"
                                    Width="100" Height="100"
@@ -319,6 +463,13 @@
                     <local:PointerCursorButton x:Name="SettingsButton"
                             Content="Settings"
                             Click="SettingsButton_Click"
+                            Style="{StaticResource SidebarActionButtonStyle}"/>
+
+                    <!-- TODO(debug): temporary button to trigger the win overlay without solving
+                         the puzzle - remove once the win animation is confirmed working. -->
+                    <local:PointerCursorButton x:Name="DebugTriggerWinButton"
+                            Content="Debug: Trigger Win"
+                            Click="DebugTriggerWinButton_Click"
                             Style="{StaticResource SidebarActionButtonStyle}"/>
 
                 </StackPanel>

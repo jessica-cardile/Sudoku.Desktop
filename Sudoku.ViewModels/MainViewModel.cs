@@ -27,6 +27,12 @@ public partial class MainViewModel : ObservableObject
     public partial string StatusMessage { get; set; } = "Select a cell to begin";
 
     /// <summary>
+    /// True exactly when the current board is fully and correctly filled in.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsSolved { get; set; }
+
+    /// <summary>
     /// True exactly when the selected cell currently holds a wrong placement, i.e. a hint
     /// would have something useful to fix.
     /// </summary>
@@ -184,6 +190,7 @@ public partial class MainViewModel : ObservableObject
         InitialiseGrid(difficulty);
         SelectedCell = null;
         StatusMessage = "New Game Started!";
+        IsSolved = false;
     }
 
     /// <summary>
@@ -196,6 +203,7 @@ public partial class MainViewModel : ObservableObject
         if (isFull && _engineBoard.IsBoardValid())
         {
             StatusMessage = "Congratulations! You solved the puzzle!";
+            IsSolved = true;
         }
         else
         {
