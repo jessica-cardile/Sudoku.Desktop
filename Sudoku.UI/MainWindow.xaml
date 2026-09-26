@@ -97,7 +97,7 @@
                               Height="52"
                               FontFamily="Curlz MT"
                               FontSize="20"
-                              SelectedIndex="1"
+                              SelectedIndex="0"
                               SelectionChanged="DifficultyComboBox_SelectionChanged">
                         <ComboBoxItem Content="Easy"/>
                         <ComboBoxItem Content="Medium"/>
@@ -190,9 +190,9 @@
                                                           VerticalAlignment="Stretch">
                                         <lottie:LottieVisualSource UriSource="ms-appx:///Assets/Animations/you-win.json"/>
                                     </AnimatedVisualPlayer>
-                                    <local:PointerCursorButton x:Name="CloseWinOverlayButton"
-                                            Content="Nice!"
-                                            Click="CloseWinOverlayButton_Click"
+                                    <local:PointerCursorButton x:Name="PlayAgainButton"
+                                            Content="Play Again!"
+                                            Click="PlayAgainButton_Click"
                                             Padding="28,8"
                                             FontFamily="Curlz MT"
                                             FontSize="20"

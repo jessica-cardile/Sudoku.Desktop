@@ -41,7 +41,7 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        NewGame(Difficulty.Medium);
+        NewGame(Difficulty.Easy);
     }
 
     /// <summary>

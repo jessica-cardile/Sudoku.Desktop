@@ -656,10 +656,11 @@ namespace Sudoku.UI
             SetSidebarButtonsEnabled(false);
         }
 
-        private void CloseWinOverlayButton_Click(object sender, RoutedEventArgs e)
+        private void PlayAgainButton_Click(object sender, RoutedEventArgs e)
         {
             WinOverlay.Visibility = Visibility.Collapsed;
             SetSidebarButtonsEnabled(true);
+            StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
