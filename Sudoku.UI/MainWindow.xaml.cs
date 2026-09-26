@@ -55,6 +55,9 @@ namespace Sudoku.UI
         private bool _hintPulsing;
         private bool _erasePulsing;
         private bool _erasePulseSuppressed;
+
+        private const string BugReportEmail = "jessicacardile.dev@outlook.com";
+        private string _appVersion = string.Empty;
         private bool _sidebarEnabled = true;
 
         private readonly List<Button> _cellButtons = new();
@@ -130,7 +133,8 @@ namespace Sudoku.UI
             LimitedHintsToggle.IsOn = AppSettings.LimitedHints;
 
             var version = Windows.ApplicationModel.Package.Current.Id.Version;
-            AppVersionText.Text = $"App Version: {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            _appVersion = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            AppVersionText.Text = $"App Version: {_appVersion}";
 
             _isReady = true;
         }
@@ -736,6 +740,16 @@ namespace Sudoku.UI
             WinOverlay.Visibility = Visibility.Collapsed;
             SetSidebarButtonsEnabled(true);
             StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
+        }
+
+        // Opens the user's default mail app with a pre-filled bug report addressed to the developer.
+        private async void ReportBugButton_Click(object sender, RoutedEventArgs e)
+        {
+            string subject = Uri.EscapeDataString($"Sudoku bug report (v{_appVersion})");
+            string body = Uri.EscapeDataString(
+                $"App version: {_appVersion}\r\n\r\nWhat happened:\r\n\r\nWhat I expected:\r\n\r\nSteps to reproduce:\r\n");
+
+            await Windows.System.Launcher.LaunchUriAsync(new Uri($"mailto:{BugReportEmail}?subject={subject}&body={body}"));
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)

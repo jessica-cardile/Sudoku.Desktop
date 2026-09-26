@@ -355,27 +355,51 @@
                                                 Foreground="{StaticResource AppAccentTextBrush}"/>
                                     </Grid>
 
-                                    <!-- About: pinned to the bottom of the card, outside the centred settings block above
-                                         so it doesn't shift the options off the card's exact centre. -->
+                                    <!-- Bottom sections, pinned to the bottom of the card outside the centred settings
+                                         block above so they don't shift the options off the card's exact centre.
+                                         Top to bottom: Report a Bug, then About. -->
                                     <StackPanel HorizontalAlignment="Center"
                                                 VerticalAlignment="Bottom"
                                                 Margin="0,0,0,20"
-                                                Spacing="2">
-                                        <TextBlock Text="About"
-                                                   FontFamily="Chiller"
-                                                   FontSize="28"
-                                                   Foreground="White"
-                                                   HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Copyright: Jessica Cardile, 2026"
-                                                   FontFamily="Chiller"
-                                                   FontSize="20"
-                                                   Foreground="#CCFFFFFF"
-                                                   HorizontalAlignment="Center"/>
-                                        <TextBlock x:Name="AppVersionText"
-                                                   FontFamily="Chiller"
-                                                   FontSize="20"
-                                                   Foreground="#CCFFFFFF"
-                                                   HorizontalAlignment="Center"/>
+                                                Spacing="18">
+                                        <!-- Report a Bug -->
+                                        <StackPanel Orientation="Horizontal"
+                                                    HorizontalAlignment="Center"
+                                                    Spacing="8">
+                                            <TextBlock Text="Report a Bug"
+                                                       FontFamily="Chiller"
+                                                       FontSize="32"
+                                                       Foreground="White"
+                                                       VerticalAlignment="Center"/>
+                                            <local:PointerCursorButton x:Name="ReportBugButton"
+                                                    Click="ReportBugButton_Click"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="6,4"
+                                                    Foreground="White"
+                                                    VerticalAlignment="Center">
+                                                <FontIcon Glyph="&#xE715;" FontFamily="Segoe MDL2 Assets" FontSize="28"/>
+                                            </local:PointerCursorButton>
+                                        </StackPanel>
+
+                                        <!-- About -->
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="About"
+                                                       FontFamily="Chiller"
+                                                       FontSize="28"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Copyright: Jessica Cardile, 2026"
+                                                       FontFamily="Chiller"
+                                                       FontSize="20"
+                                                       Foreground="#CCFFFFFF"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="AppVersionText"
+                                                       FontFamily="Chiller"
+                                                       FontSize="20"
+                                                       Foreground="#CCFFFFFF"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Grid>
                             </Border>
