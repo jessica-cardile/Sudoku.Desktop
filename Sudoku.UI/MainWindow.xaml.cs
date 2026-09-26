@@ -52,6 +52,10 @@ namespace Sudoku.UI
 
         private readonly DispatcherTimer _hintPulseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(30) };
         private double _hintPulsePhase;
+        private bool _hintPulsing;
+        private bool _erasePulsing;
+        private bool _erasePulseSuppressed;
+        private bool _sidebarEnabled = true;
 
         private readonly List<Button> _cellButtons = new();
         private readonly List<Button> _highlightedCells = new();
@@ -118,7 +122,7 @@ namespace Sudoku.UI
 
             _hintPulseTimer.Tick += HintPulseTimer_Tick;
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-            SetHintPulseActive(CanUseHint());
+            UpdatePulseEffects();
 
             DisplayTimerToggle.IsOn = AppSettings.DisplayTimer;
             ApplyDisplayTimerVisibility(DisplayTimerToggle.IsOn);
@@ -326,6 +330,7 @@ namespace Sudoku.UI
             }
 
             UpdateCellCursors();
+            UpdatePulseEffects();
         }
 
         private void DisarmAction()
@@ -338,9 +343,11 @@ namespace Sudoku.UI
 
             _armedButton = null;
             _armedValue = null;
+            _erasePulseSuppressed = false;
 
             ClearMatchingHighlights();
             UpdateCellCursors();
+            UpdatePulseEffects();
         }
 
         // While erase mode is armed, editable cells show the eraser cursor; given cells can't be erased so keep the hand.
@@ -476,14 +483,22 @@ namespace Sudoku.UI
 
         private void SetSidebarButtonsEnabled(bool isEnabled)
         {
+            _sidebarEnabled = isEnabled;
+
             foreach (var button in _numberPadButtons)
             {
                 button.IsEnabled = isEnabled;
             }
 
             foreach (var button in _actionButtons)
-            {           
+            {
                 button.IsEnabled = button == HintButton ? isEnabled && CanUseHint() : isEnabled;
+            }
+
+            if (isEnabled)
+            {
+                // Re-applies the greyed-out state of digits that are already fully placed.
+                UpdateNumberPadAvailability();
             }
         }
 
@@ -583,6 +598,14 @@ namespace Sudoku.UI
                 _hintsUsed++;
             }
 
+            // Using a hint while Erase is armed leaves Erase armed but ends its pulse; it starts
+            // pulsing again only if Erase is re-armed. Set before UseHint so the pulse update
+            // triggered by IsHintAvailable changing already sees it.
+            if (_armedValue == 0)
+            {
+                _erasePulseSuppressed = true;
+            }
+
             _viewModel.UseHint();
 
             if (_viewModel.SelectedCell is CellViewModel cell)
@@ -591,6 +614,7 @@ namespace Sudoku.UI
                 RenderCell(_cellButtons[index], cell);
                 UpdateNumberPadAvailability();
                 UpdateCellCursors();
+                UpdatePulseEffects();
             }
         }
 
@@ -606,7 +630,7 @@ namespace Sudoku.UI
         {
             if (e.PropertyName == nameof(MainViewModel.IsHintAvailable))
             {
-                SetHintPulseActive(CanUseHint());
+                UpdatePulseEffects();
             }
 
             if (e.PropertyName == nameof(MainViewModel.IsSolved) && _viewModel.IsSolved)
@@ -615,26 +639,56 @@ namespace Sudoku.UI
             }
         }
 
-        private void SetHintPulseActive(bool active)
+        // The Hint button is enabled whenever a hint can be used, but its glow only pulses while Erase mode
+        // is off; while Erase is armed the pulse moves to the Erase button instead.
+        private void UpdatePulseEffects()
         {
-            HintButton.IsEnabled = active;
+            bool eraseArmed = _armedValue == 0;
+            bool canUseHint = CanUseHint();
 
-            if (active)
+            HintButton.IsEnabled = canUseHint && _sidebarEnabled;
+
+            _hintPulsing = canUseHint && !eraseArmed;
+            _erasePulsing = eraseArmed && !_erasePulseSuppressed;
+
+            if (_hintPulsing || _erasePulsing)
             {
-                _hintPulsePhase = 0;
-                _hintPulseTimer.Start();
+                if (!_hintPulseTimer.IsEnabled)
+                {
+                    _hintPulsePhase = 0;
+                    _hintPulseTimer.Start();
+                }
             }
             else
             {
                 _hintPulseTimer.Stop();
+            }
+
+            if (!_hintPulsing)
+            {
                 HintGlow.Opacity = 0;
+            }
+
+            if (!_erasePulsing)
+            {
+                EraseGlow.Opacity = 0;
             }
         }
 
         private void HintPulseTimer_Tick(object? sender, object e)
         {
             _hintPulsePhase += 0.15;
-            HintGlow.Opacity = 0.55 + (Math.Sin(_hintPulsePhase) * 0.35); // oscillates ~0.2 -> 0.9
+            double opacity = 0.55 + (Math.Sin(_hintPulsePhase) * 0.35); // oscillates ~0.2 -> 0.9
+
+            if (_hintPulsing)
+            {
+                HintGlow.Opacity = opacity;
+            }
+
+            if (_erasePulsing)
+            {
+                EraseGlow.Opacity = opacity;
+            }
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
@@ -736,7 +790,7 @@ namespace Sudoku.UI
 
             // Re-evaluate immediately: toggling this can enable/disable the Hint button right
             // away even mid-game, without waiting for the selected cell to change.
-            SetHintPulseActive(CanUseHint());
+            UpdatePulseEffects();
         }
 
         private void GameTimer_Tick(object? sender, object e)

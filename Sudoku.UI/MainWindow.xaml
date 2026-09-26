@@ -266,14 +266,16 @@
 
                                     <local:TwinklingStarField/>
 
-                                    <!-- Title (row 0) and Close (row 2) share this Grid's middle Auto
-                                         column, flanked by two equal "*" columns - that's what pins
-                                         Close's left edge to the same X as the "S" in "Settings",
-                                         regardless of window/board size. The toggle rows (row 1) just
-                                         span across all three columns as their own independent block. -->
+                                    <!-- Title (row 0) and Close (row 2) sit in this Grid's middle Auto column,
+                                         flanked by two equal "*" columns, so both stay horizontally centred
+                                         regardless of window/board size. The toggle rows (row 1) span across
+                                         all three columns as their own independent block. -->
+                                    <!-- The two "*" rows above and below the settings list (row 1) are equal,
+                                         so the list sits at the card's exact vertical centre, with the title
+                                         hugging it from above and Close from below. -->
                                     <Grid Width="320"
                                           HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
+                                          VerticalAlignment="Stretch"
                                           RowSpacing="24">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -281,12 +283,13 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
                                         </Grid.RowDefinitions>
 
                                         <TextBlock Grid.Row="0" Grid.Column="1"
+                                                   VerticalAlignment="Bottom"
                                                    Text="Settings"
                                                    FontFamily="Curlz MT"
                                                    FontSize="56"
@@ -296,10 +299,11 @@
                                         <!-- Settings list: one row per setting (label + control).
                                              Append more rows here as more settings are added. -->
                                         <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                              HorizontalAlignment="Center"
                                               ColumnSpacing="24"
                                               RowSpacing="20">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
@@ -313,8 +317,11 @@
                                                        FontSize="32"
                                                        Foreground="White"
                                                        VerticalAlignment="Center"/>
+                                            <!-- MinWidth="0": the default ToggleSwitch style reserves 154px even with
+                                                 empty On/Off text, which pushes the visible switch off-centre. -->
                                             <ToggleSwitch x:Name="DisplayTimerToggle"
                                                           Grid.Row="0" Grid.Column="1"
+                                                          MinWidth="0"
                                                           OnContent=""
                                                           OffContent=""
                                                           Toggled="DisplayTimerToggle_Toggled"/>
@@ -327,6 +334,7 @@
                                                        VerticalAlignment="Center"/>
                                             <ToggleSwitch x:Name="LimitedHintsToggle"
                                                           Grid.Row="1" Grid.Column="1"
+                                                          MinWidth="0"
                                                           OnContent=""
                                                           OffContent=""
                                                           Toggled="LimitedHintsToggle_Toggled"/>
@@ -334,7 +342,8 @@
 
                                         <local:PointerCursorButton x:Name="CloseSettingsButton"
                                                 Grid.Row="2" Grid.Column="1"
-                                                HorizontalAlignment="Left"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Top"
                                                 Content="Close"
                                                 Click="CloseSettingsButton_Click"
                                                 CornerRadius="8"
@@ -436,6 +445,12 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
+
+                        <!-- Same glow ring as HintGlow; pulses while Erase mode is armed instead of Hint. -->
+                        <Grid x:Name="EraseGlow" Grid.Column="0" Opacity="0" IsHitTestVisible="False">
+                            <Border Margin="-5" CornerRadius="7" BorderBrush="White" BorderThickness="5"/>
+                            <Border Margin="-6" CornerRadius="8" BorderBrush="{StaticResource AppAccentBrush}" BorderThickness="1.5"/>
+                        </Grid>
 
                         <local:PointerCursorButton x:Name="EraseButton" Grid.Column="0"
                                 Content="Erase"
