@@ -253,16 +253,18 @@
                                     Visibility="Collapsed"
                                     CornerRadius="12"
                                     Background="#FF1B1B24">
-                                <Grid>
-                                    <!-- Image is painted as a Border background brush, not a raw
-                                         Image element, so it's always clipped to this rounded
-                                         rect and can never overflow the card regardless of the
-                                         source image's own size/aspect ratio. -->
-                                    <Border CornerRadius="12">
-                                        <Border.Background>
-                                            <ImageBrush ImageSource="Assets/background-settings.png" Stretch="UniformToFill"/>
-                                        </Border.Background>
-                                    </Border>
+                                <!-- Night sky drawn in code/markup instead of an image: a purple gradient with a
+                                     field of twinkling stars generated at runtime (see TwinklingStarField). -->
+                                <Grid CornerRadius="12">
+                                    <Grid.Background>
+                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                            <GradientStop Color="#FF3C285F" Offset="0"/>
+                                            <GradientStop Color="#FF2A1E4A" Offset="0.45"/>
+                                            <GradientStop Color="#FF15132C" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Grid.Background>
+
+                                    <local:TwinklingStarField/>
 
                                     <!-- Title (row 0) and Close (row 2) share this Grid's middle Auto
                                          column, flanked by two equal "*" columns - that's what pins
