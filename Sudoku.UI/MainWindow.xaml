@@ -193,7 +193,8 @@
                             <Border x:Name="WinOverlay"
                                     Visibility="Collapsed"
                                     CornerRadius="12"
-                                    Background="#FF1B1B24">
+                                    Background="#FF1B1B24"
+                                    TabFocusNavigation="Cycle">
                                 <Grid>
                                     <AnimatedVisualPlayer x:Name="WinAnimationPlayer"
                                                           AutoPlay="True"
@@ -221,7 +222,11 @@
                             <Border x:Name="NewGameConfirmOverlay"
                                     Visibility="Collapsed"
                                     CornerRadius="12"
-                                    Background="#FF1B1B24">
+                                    Background="#FF1B1B24"
+                                    TabFocusNavigation="Cycle">
+                                <Border.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="Escape" Invoked="NewGameConfirmOverlay_EscapeInvoked"/>
+                                </Border.KeyboardAccelerators>
                                 <StackPanel HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Spacing="20">
@@ -264,7 +269,11 @@
                             <Border x:Name="SettingsOverlay"
                                     Visibility="Collapsed"
                                     CornerRadius="12"
-                                    Background="#FF1B1B24">
+                                    Background="#FF1B1B24"
+                                    TabFocusNavigation="Cycle">
+                                <Border.KeyboardAccelerators>
+                                    <KeyboardAccelerator Key="Escape" Invoked="SettingsOverlay_EscapeInvoked"/>
+                                </Border.KeyboardAccelerators>
                                 <!-- Night sky drawn in code/markup instead of an image: a purple gradient with a
                                      field of twinkling stars generated at runtime (see TwinklingStarField). -->
                                 <Grid CornerRadius="12">
@@ -333,6 +342,7 @@
                                                  empty On/Off text, which pushes the visible switch off-centre. -->
                                             <ToggleSwitch x:Name="DisplayTimerToggle"
                                                           Grid.Row="0" Grid.Column="1"
+                                                          AutomationProperties.Name="Display Timer"
                                                           MinWidth="0"
                                                           OnContent=""
                                                           OffContent=""
@@ -346,6 +356,7 @@
                                                        VerticalAlignment="Center"/>
                                             <ToggleSwitch x:Name="LimitedHintsToggle"
                                                           Grid.Row="1" Grid.Column="1"
+                                                          AutomationProperties.Name="Limited Hints"
                                                           MinWidth="0"
                                                           OnContent=""
                                                           OffContent=""
@@ -385,6 +396,8 @@
                                                        VerticalAlignment="Center"/>
                                             <local:PointerCursorButton x:Name="ReportBugButton"
                                                     Click="ReportBugButton_Click"
+                                                    AutomationProperties.Name="Report a bug by email"
+                                                    ToolTipService.ToolTip="Report a bug"
                                                     Background="Transparent"
                                                     BorderThickness="0"
                                                     Padding="6,4"

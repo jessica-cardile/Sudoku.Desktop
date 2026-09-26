@@ -526,6 +526,7 @@ namespace Sudoku.UI
             SetSidebarButtonsEnabled(false);
 
             NewGameConfirmOverlay.Visibility = Visibility.Visible;
+            FocusWhenReady(NewGameConfirmYesButton);
         }
 
         private void HideNewGameConfirmDialogChrome()
@@ -535,6 +536,14 @@ namespace Sudoku.UI
             DifficultyComboBox.IsEnabled = true;
             NewGameButton.IsEnabled = true;
             SetSidebarButtonsEnabled(true);
+            FocusWhenReady(DifficultyComboBox);
+        }
+
+        // Moves keyboard focus to a control that was just shown or re-enabled. Deferred so the layout
+        // pass for the change has run first; Keyboard shows the focus rectangle.
+        private void FocusWhenReady(Control target)
+        {
+            DispatcherQueue.TryEnqueue(() => target.Focus(FocusState.Keyboard));
         }
 
         private void SetSidebarButtonsEnabled(bool isEnabled)
@@ -575,6 +584,18 @@ namespace Sudoku.UI
             {
                 _gameTimer.Start();
             }
+        }
+
+        // Escape declines the confirmation, same as clicking No.
+        private void NewGameConfirmOverlay_EscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (NewGameConfirmOverlay.Visibility != Visibility.Visible)
+            {
+                return;
+            }
+
+            args.Handled = true;
+            NewGameConfirmNoButton_Click(sender, new RoutedEventArgs());
         }
 
         private void ApplyBoardToUi()
@@ -785,6 +806,7 @@ namespace Sudoku.UI
             _gameTimer.Stop();
             WinOverlay.Visibility = Visibility.Visible;
             SetSidebarButtonsEnabled(false);
+            FocusWhenReady(PlayAgainButton);
         }
 
         private void PlayAgainButton_Click(object sender, RoutedEventArgs e)
@@ -792,6 +814,7 @@ namespace Sudoku.UI
             WinOverlay.Visibility = Visibility.Collapsed;
             SetSidebarButtonsEnabled(true);
             StartNewGame((Difficulty)DifficultyComboBox.SelectedIndex);
+            FocusWhenReady(NewGameButton);
         }
 
         // Opens the user's default mail app with a pre-filled bug report addressed to the developer.
@@ -815,9 +838,27 @@ namespace Sudoku.UI
 
             SettingsOverlay.Visibility = Visibility.Visible;
             SetSidebarButtonsEnabled(false);
+            FocusWhenReady(DisplayTimerToggle);
         }
 
         private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            CloseSettings();
+        }
+
+        // Escape closes the settings card, same as clicking Close.
+        private void SettingsOverlay_EscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (SettingsOverlay.Visibility != Visibility.Visible)
+            {
+                return;
+            }
+
+            args.Handled = true;
+            CloseSettings();
+        }
+
+        private void CloseSettings()
         {
             SettingsOverlay.Visibility = Visibility.Collapsed;
             SetSidebarButtonsEnabled(true);
@@ -826,6 +867,8 @@ namespace Sudoku.UI
             {
                 _gameTimer.Start();
             }
+
+            FocusWhenReady(SettingsButton);
         }
 
         private void DisplayTimerToggle_Toggled(object sender, RoutedEventArgs e)
