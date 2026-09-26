@@ -36,6 +36,13 @@ namespace Sudoku.UI
         private const double MaxSidebarWidth = 320;
         private const int MaxLimitedHints = 3;
 
+        // Layout measurements (in DIPs) shared by the board sizing and the minimum window width.
+        private const double ColumnGap = 48;                  // the gap column between board and sidebar
+        private const double BoardChrome = 22;                // board border: 8*2 padding + 3*2 thickness
+        private const double RootGridHorizontalPadding = 48;  // RootGrid Padding="24" on each side
+        private const int BaseMinimumWindowWidth = 900;
+        private const int WindowFrameAllowancePixels = 16;
+
         private readonly Brush _accentBrush;
         private readonly Brush _accentTextBrush;
         private readonly Brush _cellBorderBrush;
@@ -77,7 +84,7 @@ namespace Sudoku.UI
         {
             this.InitializeComponent();
 
-            _actionButtons = new List<Button> { EraseButton, HintButton, PauseButton, SettingsButton };
+            _actionButtons = new List<Button> { EraseButton, HintButton, PauseButton };
 
             _accentBrush = (Brush)Application.Current.Resources["AppAccentBrush"];
             _accentTextBrush = (Brush)Application.Current.Resources["AppAccentTextBrush"];
@@ -104,7 +111,7 @@ namespace Sudoku.UI
 
             if (appWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
             {
-                presenter.PreferredMinimumWidth = 900;
+                presenter.PreferredMinimumWidth = BaseMinimumWindowWidth;
                 presenter.PreferredMinimumHeight = 650;
             }
 
@@ -198,8 +205,13 @@ namespace Sudoku.UI
 
         private void ContentArea_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            // The header controls (difficulty, New Game, Settings) set the right column's width, so the
+            // board must leave room for them or the row gets clipped on narrower windows.
+            double headerWidth = MeasureDesiredWidth(HeaderControlsPanel);
+            double roomForBoard = e.NewSize.Width - ColumnGap - headerWidth - BoardChrome;
+
             double boardSize = Math.Clamp(
-                Math.Min(e.NewSize.Width * 0.55, e.NewSize.Height - 40),
+                Math.Min(Math.Min(e.NewSize.Width * 0.55, e.NewSize.Height - 40), roomForBoard),
                 MinBoardSize, MaxBoardSize);
 
             BoardGrid.Width = boardSize;
@@ -208,6 +220,43 @@ namespace Sudoku.UI
 
             double scale = boardSize / MinBoardSize;
             UpdateSidebarScale(scale);
+
+            UpdateMinimumWindowWidth(headerWidth);
+        }
+
+        private static double MeasureDesiredWidth(FrameworkElement element)
+        {
+            element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            return element.DesiredSize.Width;
+        }
+
+        // Keeps the window from being sized narrower than the layout needs at the smallest board size
+        // (title + gap + header controls), and grows it if it is currently too narrow for that.
+        private void UpdateMinimumWindowWidth(double headerWidth)
+        {
+            if (_appWindow?.Presenter is not Microsoft.UI.Windowing.OverlappedPresenter presenter || Content.XamlRoot is null)
+            {
+                return;
+            }
+
+            double contentWidth = Math.Max(MeasureDesiredWidth(TitlePanel), MinBoardSize + BoardChrome) + ColumnGap + headerWidth;
+            double minDips = RootGridHorizontalPadding + contentWidth;
+            int minPixels = Math.Max(
+                BaseMinimumWindowWidth,
+                (int)Math.Ceiling(minDips * Content.XamlRoot.RasterizationScale) + WindowFrameAllowancePixels);
+
+            if (presenter.PreferredMinimumWidth != minPixels)
+            {
+                presenter.PreferredMinimumWidth = minPixels;
+            }
+
+            var workArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(_appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest).WorkArea;
+            int targetWidth = Math.Min(minPixels, workArea.Width);
+
+            if (_appWindow.Size.Width < targetWidth)
+            {
+                _appWindow.Resize(new SizeInt32(targetWidth, _appWindow.Size.Height));
+            }
         }
 
         private void UpdateSidebarScale(double scale)
@@ -491,6 +540,9 @@ namespace Sudoku.UI
         private void SetSidebarButtonsEnabled(bool isEnabled)
         {
             _sidebarEnabled = isEnabled;
+
+            // Settings lives in the header now, but is still disabled whenever an overlay/dialog is up.
+            SettingsButton.IsEnabled = isEnabled;
 
             foreach (var button in _numberPadButtons)
             {
