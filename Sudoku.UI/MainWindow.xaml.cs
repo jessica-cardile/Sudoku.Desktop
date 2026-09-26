@@ -129,6 +129,9 @@ namespace Sudoku.UI
 
             LimitedHintsToggle.IsOn = AppSettings.LimitedHints;
 
+            var version = Windows.ApplicationModel.Package.Current.Id.Version;
+            AppVersionText.Text = $"App Version: {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+
             _isReady = true;
         }
 

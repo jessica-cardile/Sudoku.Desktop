@@ -354,6 +354,29 @@
                                                 Background="{StaticResource AppAccentBrush}"
                                                 Foreground="{StaticResource AppAccentTextBrush}"/>
                                     </Grid>
+
+                                    <!-- About: pinned to the bottom of the card, outside the centred settings block above
+                                         so it doesn't shift the options off the card's exact centre. -->
+                                    <StackPanel HorizontalAlignment="Center"
+                                                VerticalAlignment="Bottom"
+                                                Margin="0,0,0,20"
+                                                Spacing="2">
+                                        <TextBlock Text="About"
+                                                   FontFamily="Chiller"
+                                                   FontSize="28"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Copyright: Jessica Cardile, 2026"
+                                                   FontFamily="Chiller"
+                                                   FontSize="20"
+                                                   Foreground="#CCFFFFFF"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock x:Name="AppVersionText"
+                                                   FontFamily="Chiller"
+                                                   FontSize="20"
+                                                   Foreground="#CCFFFFFF"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </Grid>
