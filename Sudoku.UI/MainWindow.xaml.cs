@@ -397,6 +397,7 @@ namespace Sudoku.UI
             }
 
             RenderCell(cellButton, cellViewModel);
+            UpdateNumberPadAvailability();
 
             // The armed digit/eraser stays selected so the user can place it again without
             // it's only cleared by picking a different one or tapping outside the board.
@@ -494,6 +495,35 @@ namespace Sudoku.UI
 
                 RenderCell(button, cell);
             }
+
+            UpdateNumberPadAvailability();
+        }
+
+        /// <summary>
+        /// Greys out and disables a number pad button once all 9 instances of its digit are
+        /// already placed on the board, so the player can see at a glance which digits are
+        /// exhausted.
+        /// </summary>
+        private void UpdateNumberPadAvailability()
+        {
+            foreach (var button in _numberPadButtons)
+            {
+                if (button.Tag is not string digitText || !int.TryParse(digitText, out int digit))
+                {
+                    continue;
+                }
+
+                int placedCount = _viewModel.Board.Count(c => c.Value == digit);
+                bool isExhausted = placedCount >= 9;
+
+                button.IsEnabled = !isExhausted;
+                button.Opacity = isExhausted ? 0.35 : 1;
+
+                if (isExhausted && _armedButton == button)
+                {
+                    DisarmAction();
+                }
+            }
         }
 
         private void RenderCell(Button button, CellViewModel cell)
@@ -542,6 +572,7 @@ namespace Sudoku.UI
             {
                 int index = cell.Row * 9 + cell.Column;
                 RenderCell(_cellButtons[index], cell);
+                UpdateNumberPadAvailability();
             }
         }
 

@@ -466,11 +466,12 @@
                             Style="{StaticResource SidebarActionButtonStyle}"/>
 
                     <!-- TODO(debug): temporary button to trigger the win overlay without solving
-                         the puzzle - remove once the win animation is confirmed working. -->
+                         the puzzle - uncomment to re-enable for testing.
                     <local:PointerCursorButton x:Name="DebugTriggerWinButton"
                             Content="Debug: Trigger Win"
                             Click="DebugTriggerWinButton_Click"
                             Style="{StaticResource SidebarActionButtonStyle}"/>
+                    -->
 
                 </StackPanel>
             </Grid>
